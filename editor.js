@@ -18,7 +18,25 @@ mw.loader.using(['mediawiki.api'], function() {
         },
         {
             id: 'type',
-            formInputId: 'input-type'
+            formInputId: 'input-type',
+            possibleValues: [
+                {
+                    'value': 'architecture',
+                    'title': 'памятник архитектуры'
+                },
+                {
+                    'value': 'history',
+                    'title': 'памятник истории'
+                },
+                {
+                    'value': 'monument',
+                    'title': 'памятник монументального искусства'
+                },
+                {
+                    'value': 'archeology',
+                    'title': 'памятник археологии'
+                }
+            ]
         },
         {
             id: 'status',
@@ -393,27 +411,7 @@ mw.loader.using(['mediawiki.api'], function() {
             ) +
             tableTwoColumns(
                 [
-                    editorFormRowSelect(
-                        'type', 'Тип',
-                        [
-                            {
-                                'value': 'architecture',
-                                'title': 'памятник архитектуры'
-                            },
-                            {
-                                'value': 'history',
-                                'title': 'памятник истории'
-                            },
-                            {
-                                'value': 'monument',
-                                'title': 'памятник монументального искусства'
-                            },
-                            {
-                                'value': 'archeology',
-                                'title': 'памятник археологии'
-                            }
-                        ]
-                    ),
+                    editorFormRowSelect('type', 'Тип', monumentListingParameters.getParameter('type').possibleValues),
                     editorFormRowCheckbox('destroyed', 'Утрачен'),
                     rowDivider(),
                     editorFormRowText('region', 'Регион (ISO-код)'),
@@ -510,9 +508,12 @@ mw.loader.using(['mediawiki.api'], function() {
          */
         var addButtons = function() {
             var tableOfContentsCount = 0;
+            var firstListingTableWithinSection = null;
+
+            var pageBodyContentElement = $('#bodyContent');
 
             // Iterate over section headers
-            $('#bodyContent').find('h2').each(function(headerElementIndex) {
+            pageBodyContentElement.find('h2').each(function(headerElementIndex) {
                 var headerElement = $(this);
 
                 var isTableOfContents = headerElement.parents('.toc').length > 0;
@@ -521,7 +522,7 @@ mw.loader.using(['mediawiki.api'], function() {
                     return;
                 }
 
-                var sectionIndex = headerElementIndex - tableOfContentsCount;
+                var sectionIndex = headerElementIndex - tableOfContentsCount + 1;
                 var sectionEditLink = $('<a href="javascript:">добавить</a>');
                 var bracketStart = $('<span class="mw-editsection-bracket">[</span>');
                 var bracketEnd = $('<span class="mw-editsection-bracket">]</span>');
@@ -532,21 +533,40 @@ mw.loader.using(['mediawiki.api'], function() {
                     initListingEditorDialog(MODE_ADD, sectionIndex);
                 });
 
-                // Iterate over listings
+                // Iterate over listings inside sections
                 headerElement.nextUntil("h1, h2", "table.monument").each(function(listingIndex) {
                     var listingTable = $(this);
-                    var editListingButton = $('<span class="vcard-edit-button noprint" style="padding-left: 5px;">')
-                        .html('<a href="javascript:" class="icon-pencil" title="Редактировать">Редактировать</a>' )
-                        .click(function() {
-                            initListingEditorDialog(MODE_EDIT, sectionIndex, listingIndex);
-                        });
-                    var nameElement = listingTable.find('span.monument-name').first();
-                    if (nameElement) {
-                        nameElement.append(editListingButton);
+                    if (firstListingTableWithinSection === null) {
+                        firstListingTableWithinSection = listingTable;
                     }
+                    addEditButton(listingTable, sectionIndex, listingIndex);
                 });
             });
+
+            // Iterate over listings that are before any section
+            pageBodyContentElement.find('table.monument').each(function(listingIndex) {
+                var listingTable = $(this);
+
+                if (listingTable.is(firstListingTableWithinSection)) {
+                    return false;
+                }
+
+                addEditButton(listingTable, 0, listingIndex);
+            });
         };
+
+        function addEditButton(listingTable, sectionIndex, listingIndex)
+        {
+            var editListingButton = $('<span class="vcard-edit-button noprint" style="padding-left: 5px;">')
+                .html('<a href="javascript:" class="icon-pencil" title="Редактировать">Редактировать</a>' )
+                .click(function() {
+                    initListingEditorDialog(MODE_EDIT, sectionIndex, listingIndex);
+                });
+            var nameElement = listingTable.find('span.monument-name').first();
+            if (nameElement) {
+                nameElement.append(editListingButton);
+            }
+        }
 
         /**
          * This method is invoked when an "add" or "edit" listing button is
@@ -556,16 +576,13 @@ mw.loader.using(['mediawiki.api'], function() {
          * edit.
          */
         var initListingEditorDialog = function(mode, sectionIndex, listingIndex) {
-            // sections are enumerated starting from 1
-            var sectionNumber = sectionIndex + 1;
-
             $.ajax({
                 url: mw.util.wikiScript(''),
-                data: { title: mw.config.get('wgPageName'), action: 'raw', section: sectionNumber },
+                data: { title: mw.config.get('wgPageName'), action: 'raw', section: sectionIndex },
                 cache: false // required
             }).done(function(data, textStatus, jqXHR) {
                 sectionText = data;
-                openListingEditorDialog(mode, sectionNumber, listingIndex);
+                openListingEditorDialog(mode, sectionIndex, listingIndex);
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 alert('Ошибка при получении исходного вики-текста статьи: ' + textStatus + ' ' + errorThrown);
             });
@@ -668,7 +685,7 @@ mw.loader.using(['mediawiki.api'], function() {
 		 * template ("{{listing|key=value|...}}").
 		 */
         var getListingTypesRegex = function() {
-            return new RegExp('{{\\s*(monument)\\b','ig');
+            return new RegExp('{{\\s*(monument)(\\s|\\|)','ig');
         };
 
         /**
