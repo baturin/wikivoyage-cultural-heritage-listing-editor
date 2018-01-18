@@ -11,6 +11,258 @@ mw.loader.using(['mediawiki.api'], function() {
 
     var CulturalHeritageListingEditor = {};
 
+    var monumentListingParameterDescriptors = [
+        {
+            id: 'name',
+            formInputId: 'input-name'
+        },
+        {
+            id: 'type',
+            formInputId: 'input-type'
+        },
+        {
+            id: 'status',
+            getValue: function() {
+                if ($('#input-destroyed').is(':checked')) {
+                    return 'destroyed';
+                } else {
+                    return '';
+                }
+            },
+            setValue: function(form, value) {
+                $('#input-destroyed', form).attr('checked', value === 'destroyed');
+            }
+        },
+        {
+            id: 'region',
+            formInputId: 'input-region'
+        },
+        {
+            id: 'district',
+            formInputId: 'input-district'
+        },
+        {
+            id: 'municipality',
+            formInputId: 'input-municipality'
+        },
+        {
+            id: 'block',
+            formInputId: 'input-block'
+        },
+        {
+            id: 'address',
+            formInputId: 'input-address'
+        },
+        {
+            id: 'lat',
+            formInputId: 'input-lat'
+        },
+        {
+            id: 'long',
+            formInputId: 'input-long'
+        },
+        {
+            id: 'precise',
+            getValue: function() {
+                if ($('#input-precise').is(':checked')) {
+                    return 'yes';
+                } else {
+                    return 'no';
+                }
+            },
+            setValue: function(form, value) {
+                $('#input-precise', form).prop('checked', value === 'yes')
+            }
+        },
+        {
+            id: 'year',
+            formInputId: 'input-year'
+        },
+        {
+            id: 'author',
+            formInputId: 'input-author'
+        },
+        {
+            id: 'knid',
+            formInputId: 'input-knid'
+        },
+        {
+            id: 'complex',
+            formInputId: 'input-complex'
+        },
+        {
+            id: 'knid-new',
+            formInputId: 'input-knid-new'
+        },
+        {
+            id: 'image',
+            formInputId: 'input-image'
+        },
+        {
+            id: 'wiki',
+            formInputId: 'input-wiki'
+        },
+        {
+            id: 'wdid',
+            formInputId: 'input-wdid'
+        },
+        {
+            id: 'commonscat',
+            formInputId: 'input-commonscat'
+        },
+        {
+            id: 'munid',
+            formInputId: 'input-munid'
+        },
+        {
+            id: 'document',
+            formInputId: 'input-document'
+        },
+        {
+            id: 'link',
+            formInputId: 'input-link'
+        },
+        {
+            id: 'linkextra',
+            formInputId: 'input-linkextra'
+        },
+        {
+            id: 'description',
+            formInputId: 'input-description'
+        }
+    ];
+
+    function createTemplateParameters(parameterDescriptors) {
+        var parametersById = {};
+        var parameterIds = [];
+
+        for (var i = 0; i < parameterDescriptors.length; i++) {
+            var parameterData = parameterDescriptors[i];
+            var parameterId = parameterData.id;
+            parametersById [parameterId] = parameterData;
+            parameterIds.push(parameterId);
+        }
+
+        return {
+            _parametersById: parametersById,
+            _parameterIds: parameterIds,
+
+            getParameter: function (parameterId) {
+                return this._parametersById[parameterId];
+            },
+
+            getParameterIds: function () {
+                return this._parameterIds;
+            },
+
+            foreachParameter: function(callback) {
+                for (var i = 0; i < parameterDescriptors.length; i++) {
+                    var parameterData = parameterDescriptors[i];
+                    callback(parameterData);
+                }
+            }
+        };
+    }
+
+    var monumentListingParameters = createTemplateParameters(monumentListingParameterDescriptors);
+
+    function arrayHasElement(array, element) {
+        return array.indexOf(element) >= 0;
+    }
+
+    function createListingSerializer(listingType, listingParameters, listingData) {
+        return {
+            _data: '',
+            _serializedParameters: [],
+
+            writeListingStart: function() {
+                this._data += '{{' + listingType + '\n';
+            },
+
+            writeParameterLine: function(parameterName, optional) {
+                var parameterValue = listingData[parameterName];
+                if (optional && (parameterValue === '' || parameterValue === undefined)) {
+                    return;
+                }
+                if (parameterValue === undefined) {
+                    parameterValue = '';
+                }
+                this._data += '|' + parameterName + "=" + parameterValue + "\n";
+                this._serializedParameters.push(parameterName);
+            },
+
+            writeParametersLine: function(parameterNames) {
+                for (var i = 0; i < parameterNames.length; i++) {
+                    var parameterName = parameterNames[i];
+                    var parameterValue = listingData[parameterName];
+                    if (parameterValue === undefined) {
+                        parameterValue = '';
+                    }
+                    if (i > 0) {
+                        this._data += " ";
+                    }
+                    this._data += "|" + parameterName + "=" + parameterValue;
+                    this._serializedParameters.push(parameterName);
+                }
+                this._data += "\n";
+            },
+
+            writeOtherNonEmptyParameters: function() {
+                for (var parameterName in listingData) {
+                    if (listingData.hasOwnProperty(parameterName)) {
+                        if (!arrayHasElement(this._serializedParameters, parameterName)) {
+                            var parameterValue = listingData[parameterName];
+                            if (parameterValue !== '' && parameterValue !== undefined) {
+                                this._data += '|' + parameterName + "=" + parameterValue + "\n"
+                            }
+                        }
+                    }
+                }
+            },
+
+            writeListingEnd: function() {
+                this._data += '}}';
+            },
+
+            getSerializedListing: function() {
+                return this._data;
+            }
+        };
+    }
+
+    function serializeMonumentListing(listingData) {
+        var serializer = createListingSerializer("monument", monumentListingParameterDescriptors, listingData);
+        serializer.writeListingStart();
+        serializer.writeParameterLine("type");
+        serializer.writeParametersLine(["lat", "long", "precise"]);
+        serializer.writeParameterLine("name");
+        serializer.writeParametersLine(["knid", "complex"]);
+        serializer.writeParameterLine("knid-new");
+        serializer.writeParametersLine(["region", "district"]);
+        serializer.writeParametersLine(["municipality", "munid"]);
+        serializer.writeParameterLine("block", true);
+        serializer.writeParameterLine("address");
+        serializer.writeParameterLine("year");
+        serializer.writeParameterLine("author");
+        serializer.writeParameterLine("description");
+        serializer.writeParameterLine("status", true);
+        serializer.writeParameterLine("image");
+        serializer.writeParameterLine("wdid");
+        serializer.writeParameterLine("wiki");
+        serializer.writeParameterLine("commonscat");
+        serializer.writeParameterLine("link");
+        serializer.writeParameterLine("linkextra", true);
+        serializer.writeParameterLine("document");
+        serializer.writeParameterLine("doc", true);
+        serializer.writeParameterLine("style", true);
+        serializer.writeParameterLine("protection", true);
+        serializer.writeParameterLine("dismissed", true);
+        serializer.writeOtherNonEmptyParameters();
+        serializer.writeListingEnd();
+
+        return serializer.getSerializedListing();
+    }
+
     CulturalHeritageListingEditor.Core = function() {
         var TRANSLATIONS = {
             addTitle: 'Добавить объект',
@@ -35,64 +287,6 @@ mw.loader.using(['mediawiki.api'], function() {
         // listing editor dialog will fill the available space, otherwise it will
         // be limited to the specified width
         var MAX_DIALOG_WIDTH = 1200;
-
-        var LISTING_TEMPLATE_PARAMETERS = {
-            'name': { id:'input-name'},
-
-            'type': { id:'input-type' },
-            'status': {
-                getValue: function() {
-                    if ($('#input-destroyed').is(':checked')) {
-                        return 'destroyed';
-                    } else {
-                        return '';
-                    }
-                },
-                setValue: function(form, value) {
-                    $('#input-destroyed', form).attr('checked', value === 'destroyed');
-                }
-            },
-
-            'region': { id: 'input-region' },
-            'district': { id: 'input-district' },
-            'municipality': { id: 'input-municipality' },
-            'block': { id: 'input-block' },
-            'address': { id:'input-address' },
-
-            'lat': { id:'input-lat' },
-            'long': { id:'input-long' },
-            'precise': {
-                getValue: function() {
-                    if ($('#input-precise').is(':checked')) {
-                        return 'yes';
-                    } else {
-                        return 'no';
-                    }
-                },
-                setValue: function(form, value) {
-                    $('#input-precise', form).prop('checked', value === 'yes')
-                }
-            },
-
-            'year': { id: 'input-year' },
-            'author': { id: 'input-author' },
-
-            'knid': { id: 'input-knid' },
-            'complex': { id: 'input-complex' },
-            'knid-new': { id: 'input-knid-new' },
-
-            'image': { id:'input-image', newline: true },
-            'wiki': { id:'input-wiki', newline: true },
-            'wdid': { id:'input-wdid', newline: true },
-            'commonscat': { id:'input-commonscat', newline: true },
-            'munid': { id: 'input-munid' },
-            'document': { id:'input-document', newline: true },
-
-            'link': { id:'input-link', newline: true },
-            'linkextra': { id:'input-linkextra', newline: true },
-
-            'description': { id:'input-description', newline: true }
-        };
 
         var EDITOR_FORM_SELECTOR = '#listing-editor';
         var EDITOR_SUMMARY_SELECTOR = '#input-summary';
@@ -433,12 +627,11 @@ mw.loader.using(['mediawiki.api'], function() {
             var form = $(EDITOR_FORM_HTML);
 
             // populate the empty form with existing values
-            for (var parameter in LISTING_TEMPLATE_PARAMETERS) {
-                var parameterData = LISTING_TEMPLATE_PARAMETERS[parameter];
-                var inputId = parameterData.id;
+            monumentListingParameters.foreachParameter(function(parameterData) {
+                var inputId = parameterData.formInputId;
                 var input = $('#' + inputId, form);
 
-                var paramValue = listingTemplateAsMap[parameter];
+                var paramValue = listingTemplateAsMap[parameterData.id];
                 if (paramValue) {
                     if (parameterData.setValue) {
                         parameterData.setValue(form, paramValue);
@@ -446,7 +639,7 @@ mw.loader.using(['mediawiki.api'], function() {
                         input.val(paramValue);
                     }
                 }
-            }
+            });
             return form;
         };
 
@@ -666,17 +859,15 @@ mw.loader.using(['mediawiki.api'], function() {
          * server.
          */
         var formToText = function(mode, listingTemplateWikiSyntax, listing, sectionNumber) {
-
-            for (var parameterId in LISTING_TEMPLATE_PARAMETERS) {
-                var parameterData = LISTING_TEMPLATE_PARAMETERS[parameterId];
+            monumentListingParameters.foreachParameter(function(parameterData) {
                 if (parameterData.getValue) {
-                    listing[parameterId] = parameterData.getValue();
+                    listing[parameterData.id] = parameterData.getValue();
                 } else {
-                    var input = $("#" + parameterData.id);
-                    listing[parameterId] = input.val();
+                    var input = $("#" + parameterData.formInputId);
+                    listing[parameterData.id] = input.val();
                 }
-            }
-            var text = listingToStr(listing);
+            });
+            var text = serializeMonumentListing(listing);
 
             var summary = editSummarySection();
             if (mode === MODE_ADD) {
@@ -870,50 +1061,6 @@ mw.loader.using(['mediawiki.api'], function() {
                     }
                 ]
             });
-        };
-
-        /**
-         * Convert the listing map back to a wiki text string.
-         */
-        var listingToStr = function(listing) {
-            var listingParameters = LISTING_TEMPLATE_PARAMETERS;
-            var saveStr = '{{monument\n';
-
-            for (var parameter in listingParameters) {
-                saveStr += '| ' + parameter + '=' + listing[parameter];
-
-                if (!saveStr.match(/\n$/)) {
-                    if (listingParameters[parameter].newline) {
-                        saveStr = rtrim(saveStr) + '\n';
-                    } else if (!saveStr.match(/ $/)) {
-                        saveStr += ' ';
-                    }
-                }
-            }
-
-            // append any unexpected values
-            for (var key in listing) {
-                if (listingParameters[key]) {
-                    // this is a known field
-                    continue;
-                }
-                if (listing[key] === '') {
-                    // skip unrecognized fields without values
-                    continue;
-                }
-                saveStr += '| ' + key + '=' + listing[key];
-                saveStr += (inlineListing) ? ' ' : '\n';
-            }
-
-            saveStr += '}}';
-            return saveStr;
-        };
-
-        /**
-         * Trim whitespace at the end of a string.
-         */
-        var rtrim = function(str) {
-            return str.replace(/\s+$/, '');
         };
 
         /**
