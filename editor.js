@@ -306,16 +306,27 @@ mw.loader.using(['mediawiki.api'], function() {
             );
         }
 
-        function editorFormRowText(inputId, label, placeholder, partialWidth)
+        function editorFormRowText(inputId, label, placeholder, partialWidth, insertSymbols)
         {
+            var style = '';
             var inputClass = 'editor-fullwidth';
             if (partialWidth) {
                 inputClass = 'editor-partialwidth';
+            } else {
+                if (insertSymbols) {
+                    style=" style='width: 90%'";
+                }
             }
             if (!placeholder) {
                 placeholder = '';
             }
-            var controlHtml = '<input type="text" class="' + inputClass + '" placeholder="' + placeholder + '" id="input-' + inputId + '">';
+
+            var controlHtml = '<input type="text" class="' + inputClass + '"' + style + ' placeholder="' + placeholder + '" id="input-' + inputId + '">';
+            if (insertSymbols) {
+                controlHtml += '&nbsp;';
+                controlHtml += '<a class="name-quotes-template" href="javascript:">«»</a>&nbsp;';
+                controlHtml += '<a class="name-dash-template" href="javascript:">—</a>';
+            }
             return editorFormRow(inputId, label, controlHtml);
         }
 
@@ -376,7 +387,7 @@ mw.loader.using(['mediawiki.api'], function() {
             '<br/>' +
             tableFullWidth(
                 [
-                    editorFormRowText('name', 'Название', 'название объекта'),
+                    editorFormRowText('name', 'Название', 'название объекта', false, true),
                     rowDivider()
                 ]
             ) +
@@ -640,6 +651,8 @@ mw.loader.using(['mediawiki.api'], function() {
                     }
                 }
             });
+            initQuotesInsert(form);
+            initDashInsert(form);
             return form;
         };
 
@@ -1060,6 +1073,29 @@ mw.loader.using(['mediawiki.api'], function() {
                     }
                     }
                 ]
+            });
+        };
+
+        var initQuotesInsert = function(form) {
+            $('.name-quotes-template', form).click(function() {
+                var link = $(this);
+                var input = link.siblings('input').first();
+                var selectionStart = input[0].selectionStart;
+                var selectionEnd = input[0].selectionEnd;
+                var oldValue = input.val();
+                var newValue = oldValue.substring(0, selectionStart) + "«" + oldValue.substring(selectionStart, selectionEnd) + "»" + oldValue.substring(selectionEnd);
+                input.val(newValue);
+            });
+        };
+
+        var initDashInsert = function(form) {
+            $('.name-dash-template', form).click(function() {
+                var link = $(this);
+                var input = link.siblings('input').first();
+                var caretPos = input[0].selectionStart;
+                var oldValue = input.val();
+                var newValue = oldValue.substring(0, caretPos) + "—" + oldValue.substring(caretPos);
+                input.val(newValue);
             });
         };
 
