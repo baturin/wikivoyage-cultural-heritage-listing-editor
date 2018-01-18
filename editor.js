@@ -3,7 +3,7 @@
 
  Forked from "Listing Editor v2.1"
  - Original author: torty3
- - Additional contributors: Andyrom75, Wrh2
+ - Additional contributors: Andyrom75, Wrh2, AlexeyBaturin
  ********************************************************************/
 //<nowiki>
 mw.loader.using(['mediawiki.api'], function() {
