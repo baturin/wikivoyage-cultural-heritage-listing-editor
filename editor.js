@@ -281,6 +281,70 @@ mw.loader.using(['mediawiki.api'], function() {
         return serializer.getSerializedListing();
     }
 
+    var ListingEditorFormComposer = {
+        createRowDivider: function() {
+            return $('<tr>').append(
+                $('<td>', {colspan: "2"}).append(
+                    $('<div>', {
+                        class: "listing-divider",
+                        style: "margin: 3px 0"
+                    })
+                )
+            );
+        },
+        createChangesDescriptionRow: function () {
+            var inputChangesSummary = $('<input>', {
+                type: "text",
+                class: "editor-partialwidth",
+                placeholder: "что именно было изменено",
+                id: "input-summary"
+            });
+            var inputIsMinorChanges = $('<input>', {
+                type: "checkbox",
+                id: "input-minor"
+            });
+            var labelChangesSummary = $('<label>', {
+                for: "input-summary",
+                html: 'Описание изменений'
+            });
+            var labelIsMinorChanges = $('<label>', {
+                for: "input-minor",
+                class: "listing-tooltip",
+                title: "Установите галочку, если изменение незначительное, например, исправление опечатки",
+                html: 'незначительное изменение?'
+            });
+            var spanIsMinorChanges = $('<span>', {id: "span-minor"});
+            spanIsMinorChanges.append(inputIsMinorChanges).append(labelIsMinorChanges);
+            var row = $('<tr>');
+            row.append($('<td>', {'class': "editor-label-col", style: "width: 200px"}).append(labelChangesSummary));
+            row.append($('<td>').append(inputChangesSummary).append(spanIsMinorChanges));
+            return {
+                row: row,
+                inputChangesSummary: inputIsMinorChanges,
+                inputIsMinorChanges: inputIsMinorChanges
+            };
+        },
+        createObjectDescriptionRow: function() {
+            var inputDescription = $('<textarea>', {
+                rows:"4",
+                class: "editor-fullwidth",
+                placeholder: "описание объекта",
+                id: "input-description"
+            });
+            var labelDescription = $('<label>', {
+                for: "input-description",
+                html: "Описание"
+            });
+            var row = $('<tr>');
+            row.append($('<td>', {class: "editor-label-col", style: "width: 200px"}).append(labelDescription));
+            row.append($('<td>').append(inputDescription));
+            return {
+                row: row,
+                inputDescription: inputDescription
+            }
+        }
+    };
+
     CulturalHeritageListingEditor.Core = function() {
         var TRANSLATIONS = {
             addTitle: 'Добавить объект',
@@ -309,6 +373,9 @@ mw.loader.using(['mediawiki.api'], function() {
         var EDITOR_FORM_SELECTOR = '#listing-editor';
         var EDITOR_SUMMARY_SELECTOR = '#input-summary';
         var EDITOR_MINOR_EDIT_SELECTOR = '#input-minor';
+
+        var changesDescriptionRow = ListingEditorFormComposer.createChangesDescriptionRow();
+        var objectDescriptionRow = ListingEditorFormComposer.createObjectDescriptionRow();
 
         function editorFormRow(inputId, label, innerHtml)
         {
@@ -395,35 +462,30 @@ mw.loader.using(['mediawiki.api'], function() {
             );
         }
 
-        function rowDivider()
-        {
-            return '<tr><td colspan="2"><div class="listing-divider" style="margin: 3px 0"/></td></tr>';
-        }
-
         var EDITOR_FORM_HTML = '' +
             '<form id="listing-editor">' +
             '<br/>' +
             tableFullWidth(
                 [
                     editorFormRowText('name', 'Название', 'название объекта', false, true),
-                    rowDivider()
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML')
                 ]
             ) +
             tableTwoColumns(
                 [
                     editorFormRowSelect('type', 'Тип', monumentListingParameters.getParameter('type').possibleValues),
                     editorFormRowCheckbox('destroyed', 'Утрачен'),
-                    rowDivider(),
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
                     editorFormRowText('region', 'Регион (ISO-код)'),
                     editorFormRowText('district', 'Район'),
                     editorFormRowText('municipality', 'Населённый пункт'),
                     editorFormRowText('block', 'Квартал', ''),
                     editorFormRowText('address', 'Адрес', 'улица название, номер дома'),
-                    rowDivider(),
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
                     editorFormRowText('lat', 'Широта', '11.11111', true),
                     editorFormRowText('long', 'Долгота', '111.11111', true),
                     editorFormRowCheckbox('precise', 'Точные координаты'),
-                    rowDivider(),
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
                     editorFormRowText('year', 'Год постройки', 'yyyy', true),
                     editorFormRowText('author', 'Автор объекта', 'архитектор, скульптор, инженер и т.д.')
                 ],
@@ -431,44 +493,35 @@ mw.loader.using(['mediawiki.api'], function() {
                     editorFormRowText('knid', '10-ти значный № объекта', 'dddddddddd', true),
                     editorFormRowText('complex', '10-ти значный № комплекса', 'dddddddddd', true),
                     editorFormRowText('knid-new', '15-ти значный № объекта', 'ddddddddddddddd', true),
-                    rowDivider(),
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
                     editorFormRowText('image', 'Изображение', 'изображение на Викискладе'),
                     editorFormRowText('wiki', 'Википедия', 'статья в русской Википедии'),
                     editorFormRowText('wdid', 'Викиданные', 'идентификатор Викиданных', true),
                     editorFormRowText('commonscat', 'Викисклад', 'категория Викисклада'),
                     editorFormRowText('munid', 'Викиданные нас. пункта', 'идентификатор Викиданных', true),
                     editorFormRowText('document', 'Код документа', 'dDDMMYYYY', true),
-                    rowDivider(),
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
                     editorFormRowText('link', 'Ссылка №1', 'внешняя ссылка с дополнительной информацией об объекте'),
                     editorFormRowText('linkextra', 'Ссылка №2', 'внешняя ссылка с дополнительной информацией об объекте'),
-                    rowDivider()
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML')
                 ]
             ) +
             tableFullWidth(
                 [
-                    rowDivider(),
-                    '<tr id="div_description">' +
-                    '<td class="editor-label-col" style="width: 200px"><label for="input-description">Описание</label></td>' +
-                    '<td><textarea rows="4" class="editor-fullwidth" placeholder="описание объекта" id="input-description"></textarea></td>' +
-                    '</tr>'
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
+                    objectDescriptionRow.row.prop('outerHTML')
                 ]
             ) +
             tableFullWidth(
                 [
-                    rowDivider(),
-                    '<tr>' +
-                    '<td class="editor-label-col" style="width: 200px"><label for="input-summary">Описание изменений</label></td>' +
-                    '<td>' +
-                    '<input type="text" class="editor-partialwidth" placeholder="что именно было изменено" id="input-summary">' +
-                    '<span id="span-minor"><input type="checkbox" id="input-minor"><label for="input-minor" class="listing-tooltip" title="Установите галочку, если изменение незначительное, например, исправление опечатки">незначительное изменение?</label></span>' +
-                    '</td>' +
-                    '</tr>'
+                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
+                    changesDescriptionRow.row.prop('outerHTML')
                 ]
             ) +
             '</form>';
         
-        
-        
+
+
         var api = new mw.Api();
         var MODE_ADD = 'add';
         var MODE_EDIT = 'edit';
