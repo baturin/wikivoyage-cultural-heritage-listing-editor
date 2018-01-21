@@ -282,6 +282,79 @@ mw.loader.using(['mediawiki.api'], function() {
     }
 
     var ListingEditorFormComposer = {
+        createInputFormRow: function(inputElementId, labelText)
+        {
+            var rowElement = $('<tr>');
+            var label = $('<label>', {
+                for: inputElementId,
+                html: labelText
+            });
+            var labelColumn = $('<td>', {
+                class: "editor-label-col",
+                style: "width: 200px"
+            }).append(label);
+            var inputColumnElement = $('<td>');
+            rowElement.append(labelColumn).append(inputColumnElement);
+            return {
+                rowElement: rowElement,
+                inputColumnElement: inputColumnElement
+            };
+        },
+        createInputFormRowCheckbox: function(inputElementId, labelText) {
+            var row = this.createInputFormRow(inputElementId, labelText);
+            var inputElement = $('<input>', {
+                type: 'checkbox',
+                id: inputElementId
+            });
+            row.inputColumnElement.append(inputElement);
+            return {
+                rowElement: row.rowElement,
+                inputElement: inputElement
+            }
+        },
+        createInputFormRowSelect: function(inputElementId, labelText, options)
+        {
+            var row = this.createInputFormRow(inputElementId, labelText);
+            var inputElement = $('<select>', {
+                id: inputElementId
+            });
+            options.forEach(function(option) {
+                var optionElement = $('<option>', {
+                    value: option.value,
+                    html: option.title
+                });
+                inputElement.append(optionElement);
+            });
+            row.inputColumnElement.append(inputElement);
+            return {
+                rowElement: row.rowElement,
+                inputElement: inputElement
+            }
+        },
+        createInputFormRowText: function(inputElementId, labelText, placeholderText, partialWidth, insertSymbols)
+        {
+            if (!placeholderText) {
+                placeholderText = '';
+            }
+            var row = this.createInputFormRow(inputElementId, labelText);
+            var inputElement = $('<input>', {
+                type: 'text',
+                class: partialWidth ? 'editor-partialwidth' : 'editor-fullwidth',
+                style: insertSymbols ? 'width: 90%': '',
+                placeholder: placeholderText,
+                id: inputElementId
+            });
+            row.inputColumnElement.append(inputElement);
+            if (insertSymbols) {
+                row.inputColumnElement.append('&nbsp;');
+                row.inputColumnElement.append($('<a>', {class: 'name-quotes-template', href: 'javascript;'}));
+                row.inputColumnElement.append($('<a>', {class: 'name-dash-template', href: 'javascript;'}));
+            }
+            return {
+                rowElement: row.rowElement,
+                inputElement: inputElement
+            }
+        },
         createRowDivider: function() {
             return $('<tr>').append(
                 $('<td>', {colspan: "2"}).append(
@@ -342,6 +415,50 @@ mw.loader.using(['mediawiki.api'], function() {
                 row: row,
                 inputDescription: inputDescription
             }
+        },
+        createTableFullWidth: function()
+        {
+            var tableElement = $('<table>', {
+                class: 'editor-fullwidth'
+            });
+            var wrapperElement = $('<div>');
+            wrapperElement.append(tableElement);
+            return {
+                wrapperElement: wrapperElement,
+                tableElement: tableElement
+            };
+        },
+        createTableTwoColumns: function()
+        {
+            var leftTableElement = $('<table>', {
+                class: "editor-fullwidth"
+            });
+            var rightTableElement = $('<table>', {
+                class: "editor-fullwidth"
+            });
+            var wrapperElement = $('<div>');
+            wrapperElement.append(
+                $('<div>', {
+                    class: 'listing-col listing-span_1_of_2'
+                }).append(leftTableElement)
+            );
+            wrapperElement.append(
+                $('<div>', {
+                    class: 'listing-col listing-span_1_of_2'
+                }).append(rightTableElement)
+            );
+            return {
+                wrapperElement: wrapperElement,
+                leftTableElement: leftTableElement,
+                rightTableElement: rightTableElement
+            };
+        },
+        createForm: function() {
+            var formElement = $('<form id="listing-editor">');
+            formElement.append($('<br>'));
+            return {
+                formElement: formElement
+            }
         }
     };
 
@@ -374,153 +491,137 @@ mw.loader.using(['mediawiki.api'], function() {
         var EDITOR_SUMMARY_SELECTOR = '#input-summary';
         var EDITOR_MINOR_EDIT_SELECTOR = '#input-minor';
 
-        var changesDescriptionRow = ListingEditorFormComposer.createChangesDescriptionRow();
+        var editorForm = ListingEditorFormComposer.createForm();
+
+        var inputObjectName = ListingEditorFormComposer.createInputFormRowText(
+            'input-name', 'Название', 'название объекта', false, true
+        );
+
+        var tableObjectName = ListingEditorFormComposer.createTableFullWidth();
+        tableObjectName.tableElement.append(inputObjectName.rowElement);
+        tableObjectName.tableElement.append(ListingEditorFormComposer.createRowDivider());
+        editorForm.formElement.append(tableObjectName.wrapperElement);
+
+        var inputType = ListingEditorFormComposer.createInputFormRowSelect(
+            'input-type', 'Тип', monumentListingParameters.getParameter('type').possibleValues
+        );
+        var inputDestroyed = ListingEditorFormComposer.createInputFormRowCheckbox(
+            'input-destroyed', 'Утрачен'
+        );
+        var inputRegion = ListingEditorFormComposer.createInputFormRowText(
+            'input-region', 'Регион (ISO-код)'
+        );
+        var inputDistrict = ListingEditorFormComposer.createInputFormRowText(
+            'input-district', 'Район'
+        );
+        var inputMunicipality = ListingEditorFormComposer.createInputFormRowText(
+            'input-municipality', 'Населённый пункт'
+        );
+        var inputBlock = ListingEditorFormComposer.createInputFormRowText(
+            'input-block', 'Квартал'
+        );
+        var inputAddress = ListingEditorFormComposer.createInputFormRowText(
+            'input-address', 'Адрес', 'улица название, номер дома'
+        );
+        var inputLat = ListingEditorFormComposer.createInputFormRowText(
+            'input-lat', 'Широта', '11.11111', true
+        );
+        var inputLong = ListingEditorFormComposer.createInputFormRowText(
+            'input-long', 'Долгота', '111.11111', true
+        );
+        var inputPrecise = ListingEditorFormComposer.createInputFormRowCheckbox(
+            'input-precise', 'Точные координаты'
+        );
+        var inputYear = ListingEditorFormComposer.createInputFormRowText(
+            'input-year', 'Год постройки', 'yyyy', true
+        );
+        var inputAuthor = ListingEditorFormComposer.createInputFormRowText(
+            'input-author', 'Автор объекта', 'архитектор, скульптор, инженер и т.д.'
+        );
+        var inputKnid = ListingEditorFormComposer.createInputFormRowText(
+            'input-knid', '10-ти значный № объекта', 'dddddddddd', true
+        );
+        var inputComplex = ListingEditorFormComposer.createInputFormRowText(
+            'input-complex', '10-ти значный № комплекса', 'dddddddddd', true
+        );
+        var inputKnidNew = ListingEditorFormComposer.createInputFormRowText(
+            'input-knid-new', '15-ти значный № объекта', 'ddddddddddddddd', true
+        );
+        var inputImage = ListingEditorFormComposer.createInputFormRowText(
+            'input-image', 'Изображение', 'изображение на Викискладе'
+        );
+        var inputWiki = ListingEditorFormComposer.createInputFormRowText(
+            'input-wiki', 'Википедия', 'статья в русской Википедии'
+        );
+        var inputWdid = ListingEditorFormComposer.createInputFormRowText(
+            'input-wdid', 'Викиданные', 'идентификатор Викиданных', true
+        );
+        var inputCommonscat = ListingEditorFormComposer.createInputFormRowText(
+            'input-commonscat', 'Викисклад', 'категория Викисклада'
+        );
+        var inputMunid = ListingEditorFormComposer.createInputFormRowText(
+            'input-munid', 'Викиданные нас. пункта', 'идентификатор Викиданных', true
+        );
+        var inputDocument = ListingEditorFormComposer.createInputFormRowText(
+            'input-document', 'Код документа', 'dDDMMYYYY', true
+        );
+        var inputLink = ListingEditorFormComposer.createInputFormRowText(
+            'input-link', 'Ссылка №1', 'внешняя ссылка с дополнительной информацией об объекте'
+        );
+        var inputLinkExtra = ListingEditorFormComposer.createInputFormRowText(
+            'input-linkextra', 'Ссылка №2', 'внешняя ссылка с дополнительной информацией об объекте'
+        );
+
+        var tableObjectProperties = ListingEditorFormComposer.createTableTwoColumns();
+
+        tableObjectProperties.leftTableElement.append(inputType.rowElement);
+        tableObjectProperties.leftTableElement.append(inputDestroyed.rowElement);
+        tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
+        tableObjectProperties.leftTableElement.append(inputRegion.rowElement);
+        tableObjectProperties.leftTableElement.append(inputDistrict.rowElement);
+        tableObjectProperties.leftTableElement.append(inputMunicipality.rowElement);
+        tableObjectProperties.leftTableElement.append(inputBlock.rowElement);
+        tableObjectProperties.leftTableElement.append(inputAddress.rowElement);
+        tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
+        tableObjectProperties.leftTableElement.append(inputLat.rowElement);
+        tableObjectProperties.leftTableElement.append(inputLong.rowElement);
+        tableObjectProperties.leftTableElement.append(inputPrecise.rowElement);
+        tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
+        tableObjectProperties.leftTableElement.append(inputYear.rowElement);
+        tableObjectProperties.leftTableElement.append(inputAuthor.rowElement);
+
+        tableObjectProperties.rightTableElement.append(inputKnid.rowElement);
+        tableObjectProperties.rightTableElement.append(inputComplex.rowElement);
+        tableObjectProperties.rightTableElement.append(inputKnidNew.rowElement);
+        tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
+        tableObjectProperties.rightTableElement.append(inputImage.rowElement);
+        tableObjectProperties.rightTableElement.append(inputWiki.rowElement);
+        tableObjectProperties.rightTableElement.append(inputWdid.rowElement);
+        tableObjectProperties.rightTableElement.append(inputCommonscat.rowElement);
+        tableObjectProperties.rightTableElement.append(inputMunid.rowElement);
+        tableObjectProperties.rightTableElement.append(inputDocument.rowElement);
+        tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
+        tableObjectProperties.rightTableElement.append(inputLink.rowElement);
+        tableObjectProperties.rightTableElement.append(inputLinkExtra.rowElement);
+        tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
+
+        editorForm.formElement.append(tableObjectProperties.wrapperElement);
+
+        var tableObjectDescription = ListingEditorFormComposer.createTableFullWidth();
+
         var objectDescriptionRow = ListingEditorFormComposer.createObjectDescriptionRow();
+        tableObjectDescription.tableElement.append(objectDescriptionRow.row);
+        tableObjectDescription.tableElement.append(ListingEditorFormComposer.createRowDivider());
 
-        function editorFormRow(inputId, label, innerHtml)
-        {
-            return (
-                '<tr id="div_' + inputId + '">' +
-                '<td class="editor-label-col" style="width: 200px">' +
-                '<label for="input-' + inputId + '">' + label + '</label>' +
-                '</td>' +
-                '<td>' +
-                innerHtml +
-                '</td>' +
-                '</tr>'
-            );
-        }
+        editorForm.formElement.append(tableObjectDescription.wrapperElement);
 
-        function editorFormRowText(inputId, label, placeholder, partialWidth, insertSymbols)
-        {
-            var style = '';
-            var inputClass = 'editor-fullwidth';
-            if (partialWidth) {
-                inputClass = 'editor-partialwidth';
-            } else {
-                if (insertSymbols) {
-                    style=" style='width: 90%'";
-                }
-            }
-            if (!placeholder) {
-                placeholder = '';
-            }
+        var tableChanges = ListingEditorFormComposer.createTableFullWidth();
 
-            var controlHtml = '<input type="text" class="' + inputClass + '"' + style + ' placeholder="' + placeholder + '" id="input-' + inputId + '">';
-            if (insertSymbols) {
-                controlHtml += '&nbsp;';
-                controlHtml += '<a class="name-quotes-template" href="javascript:">«»</a>&nbsp;';
-                controlHtml += '<a class="name-dash-template" href="javascript:">—</a>';
-            }
-            return editorFormRow(inputId, label, controlHtml);
-        }
+        var changesDescriptionRow = ListingEditorFormComposer.createChangesDescriptionRow();
+        tableChanges.tableElement.append(ListingEditorFormComposer.createRowDivider());
+        tableChanges.tableElement.append(changesDescriptionRow.row);
 
-        function editorFormRowCheckbox(inputId, label)
-        {
-            var controlHtml = '<input type="checkbox" id="input-' + inputId + '">';
-            return editorFormRow(inputId, label, controlHtml);
-        }
-
-        function editorFormRowSelect(inputId, label, options)
-        {
-            var controlHtml = '<select id="input-' + inputId + '">';
-            options.forEach(function(option) {
-                controlHtml += '<option value="' + option.value + '">';
-                controlHtml += option.title;
-                controlHtml += '</option>';
-            });
-            controlHtml += '</select>';
-            return editorFormRow(inputId, label, controlHtml);
-        }
-
-        function tableFullWidth(rows)
-        {
-            return (
-                '<div>' +
-                '<table class="editor-fullwidth">' +
-                rows.join('') +
-                '</table>' +
-                '</div>'
-            );
-        }
-
-        function tableTwoColumns(leftRows, rightRows)
-        {
-            return (
-                '<div>' +
-                '<div class="listing-col listing-span_1_of_2">' +
-                '<table class="editor-fullwidth">' +
-                leftRows.join('') +
-                '</table>' +
-                '</div>' +
-                '<div class="listing-col listing-span_1_of_2">' +
-                '<table class="editor-fullwidth">' +
-                rightRows.join('') +
-                '</table>' +
-                '</div>' +
-                '</div>'
-            );
-        }
-
-        var EDITOR_FORM_HTML = '' +
-            '<form id="listing-editor">' +
-            '<br/>' +
-            tableFullWidth(
-                [
-                    editorFormRowText('name', 'Название', 'название объекта', false, true),
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML')
-                ]
-            ) +
-            tableTwoColumns(
-                [
-                    editorFormRowSelect('type', 'Тип', monumentListingParameters.getParameter('type').possibleValues),
-                    editorFormRowCheckbox('destroyed', 'Утрачен'),
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
-                    editorFormRowText('region', 'Регион (ISO-код)'),
-                    editorFormRowText('district', 'Район'),
-                    editorFormRowText('municipality', 'Населённый пункт'),
-                    editorFormRowText('block', 'Квартал', ''),
-                    editorFormRowText('address', 'Адрес', 'улица название, номер дома'),
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
-                    editorFormRowText('lat', 'Широта', '11.11111', true),
-                    editorFormRowText('long', 'Долгота', '111.11111', true),
-                    editorFormRowCheckbox('precise', 'Точные координаты'),
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
-                    editorFormRowText('year', 'Год постройки', 'yyyy', true),
-                    editorFormRowText('author', 'Автор объекта', 'архитектор, скульптор, инженер и т.д.')
-                ],
-                [
-                    editorFormRowText('knid', '10-ти значный № объекта', 'dddddddddd', true),
-                    editorFormRowText('complex', '10-ти значный № комплекса', 'dddddddddd', true),
-                    editorFormRowText('knid-new', '15-ти значный № объекта', 'ddddddddddddddd', true),
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
-                    editorFormRowText('image', 'Изображение', 'изображение на Викискладе'),
-                    editorFormRowText('wiki', 'Википедия', 'статья в русской Википедии'),
-                    editorFormRowText('wdid', 'Викиданные', 'идентификатор Викиданных', true),
-                    editorFormRowText('commonscat', 'Викисклад', 'категория Викисклада'),
-                    editorFormRowText('munid', 'Викиданные нас. пункта', 'идентификатор Викиданных', true),
-                    editorFormRowText('document', 'Код документа', 'dDDMMYYYY', true),
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
-                    editorFormRowText('link', 'Ссылка №1', 'внешняя ссылка с дополнительной информацией об объекте'),
-                    editorFormRowText('linkextra', 'Ссылка №2', 'внешняя ссылка с дополнительной информацией об объекте'),
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML')
-                ]
-            ) +
-            tableFullWidth(
-                [
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
-                    objectDescriptionRow.row.prop('outerHTML')
-                ]
-            ) +
-            tableFullWidth(
-                [
-                    ListingEditorFormComposer.createRowDivider().prop('outerHTML'),
-                    changesDescriptionRow.row.prop('outerHTML')
-                ]
-            ) +
-            '</form>';
-        
-
+        editorForm.formElement.append(tableChanges.wrapperElement);
 
         var api = new mw.Api();
         var MODE_ADD = 'add';
@@ -705,7 +806,7 @@ mw.loader.using(['mediawiki.api'], function() {
          * listing, pre-populate the form input fields with the existing values.
          */
         var createForm = function(mode, listingTemplateAsMap) {
-            var form = $(EDITOR_FORM_HTML);
+            var form = editorForm.formElement;
 
             // populate the empty form with existing values
             monumentListingParameters.foreachParameter(function(parameterData) {
