@@ -169,10 +169,6 @@ mw.loader.using(['mediawiki.api'], function() {
                 return this._parametersById[parameterId];
             },
 
-            getParameterIds: function () {
-                return this._parameterIds;
-            },
-
             foreachParameter: function(callback) {
                 for (var i = 0; i < parameterDescriptors.length; i++) {
                     var parameterData = parameterDescriptors[i];
@@ -281,6 +277,48 @@ mw.loader.using(['mediawiki.api'], function() {
         return serializer.getSerializedListing();
     }
 
+    var InputInsertSymbols = {
+        addQuotesInsertHandler: function(insertButton, insertToInput) {
+            insertButton.click(function() {
+                var selectionStart = insertToInput[0].selectionStart;
+                var selectionEnd = insertToInput[0].selectionEnd;
+                var oldValue = insertToInput.val();
+                var newValue = oldValue.substring(0, selectionStart) + "«" + oldValue.substring(selectionStart, selectionEnd) + "»" + oldValue.substring(selectionEnd);
+                insertToInput.val(newValue);
+                InputInsertSymbols._selectRange(insertToInput[0], selectionStart + 1, selectionEnd + 1);
+            });
+        },
+
+        addDashInsertHandler: function(insertButton, insertToInput) {
+            insertButton.click(function() {
+                var caretPos = insertToInput[0].selectionStart;
+                var oldValue = insertToInput.val();
+                var newValue = oldValue.substring(0, caretPos) + "—" + oldValue.substring(caretPos);
+                insertToInput.val(newValue);
+                InputInsertSymbols._selectRange(insertToInput[0], caretPos + 1);
+            });
+        },
+
+        _selectRange: function(element, start, end) {
+            if(end === undefined) {
+                end = start;
+            }
+            element.focus();
+            if('selectionStart' in element) {
+                element.selectionStart = start;
+                element.selectionEnd = end;
+            } else if(element.setSelectionRange) {
+                element.setSelectionRange(start, end);
+            } else if(element.createTextRange) {
+                var range = element.createTextRange();
+                range.collapse(true);
+                range.moveEnd('character', end);
+                range.moveStart('character', start);
+                range.select();
+            }
+        }
+    };
+
     var ListingEditorFormComposer = {
         createInputFormRow: function(inputElementId, labelText)
         {
@@ -346,9 +384,23 @@ mw.loader.using(['mediawiki.api'], function() {
             });
             row.inputColumnElement.append(inputElement);
             if (insertSymbols) {
+                var buttonInsertQuotes = $('<a>', {
+                    class: 'name-quotes-template',
+                    href: 'javascript:;',
+                    html: '«»'
+                });
+                var buttonInsertDash = $('<a>', {
+                    class: 'name-dash-template',
+                    href: 'javascript:;',
+                    html: '—'
+                });
+                InputInsertSymbols.addDashInsertHandler(buttonInsertDash, inputElement);
+                InputInsertSymbols.addQuotesInsertHandler(buttonInsertQuotes, inputElement);
+
                 row.inputColumnElement.append('&nbsp;');
-                row.inputColumnElement.append($('<a>', {class: 'name-quotes-template', href: 'javascript;'}));
-                row.inputColumnElement.append($('<a>', {class: 'name-dash-template', href: 'javascript;'}));
+                row.inputColumnElement.append(buttonInsertQuotes);
+                row.inputColumnElement.append('&nbsp;');
+                row.inputColumnElement.append(buttonInsertDash);
             }
             return {
                 rowElement: row.rowElement,
@@ -822,8 +874,6 @@ mw.loader.using(['mediawiki.api'], function() {
                     }
                 }
             });
-            initQuotesInsert(form);
-            initDashInsert(form);
             return form;
         };
 
@@ -1244,29 +1294,6 @@ mw.loader.using(['mediawiki.api'], function() {
                     }
                     }
                 ]
-            });
-        };
-
-        var initQuotesInsert = function(form) {
-            $('.name-quotes-template', form).click(function() {
-                var link = $(this);
-                var input = link.siblings('input').first();
-                var selectionStart = input[0].selectionStart;
-                var selectionEnd = input[0].selectionEnd;
-                var oldValue = input.val();
-                var newValue = oldValue.substring(0, selectionStart) + "«" + oldValue.substring(selectionStart, selectionEnd) + "»" + oldValue.substring(selectionEnd);
-                input.val(newValue);
-            });
-        };
-
-        var initDashInsert = function(form) {
-            $('.name-dash-template', form).click(function() {
-                var link = $(this);
-                var input = link.siblings('input').first();
-                var caretPos = input[0].selectionStart;
-                var oldValue = input.val();
-                var newValue = oldValue.substring(0, caretPos) + "—" + oldValue.substring(caretPos);
-                input.val(newValue);
             });
         };
 
