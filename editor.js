@@ -535,8 +535,13 @@ mw.loader.using(['mediawiki.api'], function() {
             _data: '',
             _serializedParameters: [],
 
-            writeListingStart: function() {
-                this._data += '{{' + listingType + '\n';
+            writeListingStart: function(addNewline) {
+                this._data += '{{' + listingType;
+                if (addNewline) {
+                    this._data += "\n";
+                } else {
+                    this._data += ' ';
+                }
             },
 
             writeParameterLine: function(parameterName, optional) {
@@ -593,7 +598,7 @@ mw.loader.using(['mediawiki.api'], function() {
     function serializeMonumentListing(listingData) {
         var serializer = createListingSerializer("monument", monumentListingParameterDescriptors, listingData);
         serializer.writeListingStart();
-        serializer.writeParameterLine("type");
+        serializer.writeParametersLine(["type", "status"]);
         serializer.writeParametersLine(["lat", "long", "precise"]);
         serializer.writeParameterLine("name");
         serializer.writeParametersLine(["knid", "complex"]);
@@ -602,10 +607,8 @@ mw.loader.using(['mediawiki.api'], function() {
         serializer.writeParametersLine(["municipality", "munid"]);
         serializer.writeParameterLine("block", true);
         serializer.writeParameterLine("address");
-        serializer.writeParameterLine("year");
-        serializer.writeParameterLine("author");
+        serializer.writeParametersLine(["year", "author"]);
         serializer.writeParameterLine("description");
-        serializer.writeParameterLine("status", true);
         serializer.writeParameterLine("image");
         serializer.writeParameterLine("wdid");
         serializer.writeParameterLine("wiki");
