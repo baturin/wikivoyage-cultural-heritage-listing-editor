@@ -21,20 +21,20 @@ mw.loader.using(['mediawiki.api'], function() {
             formInputId: 'input-type',
             possibleValues: [
                 {
-                    'value': 'architecture',
-                    'title': 'памятник архитектуры'
+                    value: 'architecture',
+                    title: 'памятник архитектуры'
                 },
                 {
-                    'value': 'history',
-                    'title': 'памятник истории'
+                    value: 'history',
+                    title: 'памятник истории'
                 },
                 {
-                    'value': 'monument',
-                    'title': 'памятник монументального искусства'
+                    value: 'monument',
+                    title: 'памятник монументального искусства'
                 },
                 {
-                    'value': 'archeology',
-                    'title': 'памятник археологии'
+                    value: 'archeology',
+                    title: 'памятник археологии'
                 }
             ]
         },
@@ -53,7 +53,354 @@ mw.loader.using(['mediawiki.api'], function() {
         },
         {
             id: 'region',
-            formInputId: 'input-region'
+            formInputId: 'input-region',
+            possibleValues: [
+                {
+                    value: "",
+                    title: "не задан"
+                },
+                {
+                    value: "ru-ad",
+                    title: "Адыгея"
+                },
+                {
+                    value: "ru-ba",
+                    title: "Башкортостан"
+                },
+                {
+                    value: "ru-bu",
+                    title: "Бурятия"
+                },
+                {
+                    value: "ru-al",
+                    title: "Алтай"
+                },
+                {
+                    value: "ru-da",
+                    title: "Дагестан"
+                },
+                {
+                    value: "ru-in",
+                    title: "Ингушетия"
+                },
+                {
+                    value: "ru-kb",
+                    title: "Кабардино-Балкария"
+                },
+                {
+                    value: "ru-kl",
+                    title: "Калмыкия"
+                },
+                {
+                    value: "ru-kc",
+                    title: "Карачаево-Черкесия"
+                },
+                {
+                    value: "ru-krl",
+                    title: "Карелия"
+                },
+                {
+                    value: "ru-ko",
+                    title: "республика Коми"
+                },
+                {
+                    value: "ru-me",
+                    title: "Марий Эл"
+                },
+                {
+                    value: "ru-mo",
+                    title: "Мордовия"
+                },
+                {
+                    value: "ru-sa",
+                    title: "Якутия (Саха)"
+                },
+                {
+                    value: "ru-se",
+                    title: "Северная Осетия"
+                },
+                {
+                    value: "ru-ta",
+                    title: "Татарстан"
+                },
+                {
+                    value: "ru-ty",
+                    title: "Тува"
+                },
+                {
+                    value: "ru-ud",
+                    title: "Удмуртия"
+                },
+                {
+                    value: "ru-kk",
+                    title: "Хакасия"
+                },
+                {
+                    value: "ru-ce",
+                    title: "Чеченская республика"
+                },
+                {
+                    value: "ru-chv",
+                    title: "Чувашия"
+                },
+                {
+                    value: "ru-alt",
+                    title: "Алтайский край"
+                },
+                {
+                    value: "ru-kda",
+                    title: "Краснодарский край"
+                },
+                {
+                    value: "ru-kya",
+                    title: "Красноярский край"
+                },
+                {
+                    value: "ru-pri",
+                    title: "Приморский край"
+                },
+                {
+                    value: "ru-sta",
+                    title: "Ставропольский край"
+                },
+                {
+                    value: "ru-kha",
+                    title: "Хабаровский край"
+                },
+                {
+                    value: "ru-amu",
+                    title: "Амурская область"
+                },
+                {
+                    value: "ru-ark",
+                    title: "Архангельская область"
+                },
+                {
+                    value: "ru-ast",
+                    title: "Астраханская область"
+                },
+                {
+                    value: "ru-bel",
+                    title: "Белгородская область"
+                },
+                {
+                    value: "ru-bry",
+                    title: "Брянская область"
+                },
+                {
+                    value: "ru-vla",
+                    title: "Владимирская область"
+                },
+                {
+                    value: "ru-vgg",
+                    title: "Волгоградская область"
+                },
+                {
+                    value: "ru-vol",
+                    title: "Вологодская область"
+                },
+                {
+                    value: "ru-vor",
+                    title: "Воронежская область"
+                },
+                {
+                    value: "ru-iva",
+                    title: "Ивановская область"
+                },
+                {
+                    value: "ru-irk",
+                    title: "Иркутская область"
+                },
+                {
+                    value: "ru-kal",
+                    title: "Калининградская область"
+                },
+                {
+                    value: "ru-klu",
+                    title: "Калужская область"
+                },
+                {
+                    value: "ru-kam",
+                    title: "Камчатский край"
+                },
+                {
+                    value: "ru-kem",
+                    title: "Кемеровская область"
+                },
+                {
+                    value: "ru-kir",
+                    title: "Кировская область"
+                },
+                {
+                    value: "ru-kos",
+                    title: "Костромская область"
+                },
+                {
+                    value: "ru-kgn",
+                    title: "Курганская область"
+                },
+                {
+                    value: "ru-krs",
+                    title: "Курская область"
+                },
+                {
+                    value: "ru-len",
+                    title: "Ленинградская область"
+                },
+                {
+                    value: "ru-lip",
+                    title: "Липецкая область"
+                },
+                {
+                    value: "ru-mag",
+                    title: "Магаданская область"
+                },
+                {
+                    value: "ru-mos",
+                    title: "Московская область"
+                },
+                {
+                    value: "ru-mur",
+                    title: "Мурманская область"
+                },
+                {
+                    value: "ru-niz",
+                    title: "Нижегородская область"
+                },
+                {
+                    value: "ru-ngr",
+                    title: "Новгородская область"
+                },
+                {
+                    value: "ru-nvs",
+                    title: "Новосибирская область"
+                },
+                {
+                    value: "ru-oms",
+                    title: "Омская область"
+                },
+                {
+                    value: "ru-ore",
+                    title: "Оренбургская область"
+                },
+                {
+                    value: "ru-orl",
+                    title: "Орловская область"
+                },
+                {
+                    value: "ru-pnz",
+                    title: "Пензенская область"
+                },
+                {
+                    value: "ru-per",
+                    title: "Пермский край"
+                },
+                {
+                    value: "ru-psk",
+                    title: "Псковская область"
+                },
+                {
+                    value: "ru-ros",
+                    title: "Ростовская область"
+                },
+                {
+                    value: "ru-rya",
+                    title: "Рязанская область"
+                },
+                {
+                    value: "ru-sam",
+                    title: "Самарская область"
+                },
+                {
+                    value: "ru-sar",
+                    title: "Саратовская область"
+                },
+                {
+                    value: "ru-sak",
+                    title: "Сахалинская область"
+                },
+                {
+                    value: "ru-sve",
+                    title: "Свердловская область"
+                },
+                {
+                    value: "ru-smo",
+                    title: "Смоленская область"
+                },
+                {
+                    value: "ru-tam",
+                    title: "Тамбовская область"
+                },
+                {
+                    value: "ru-tve",
+                    title: "Тверская область"
+                },
+                {
+                    value: "ru-tom",
+                    title: "Томская область"
+                },
+                {
+                    value: "ru-tul",
+                    title: "Тульская область"
+                },
+                {
+                    value: "ru-tyu",
+                    title: "Тюменская область"
+                },
+                {
+                    value: "ru-uly",
+                    title: "Ульяновская область"
+                },
+                {
+                    value: "ru-che",
+                    title: "Челябинская область"
+                },
+                {
+                    value: "ru-zab",
+                    title: "Забайкальский край"
+                },
+                {
+                    value: "ru-yar",
+                    title: "Ярославская область"
+                },
+                {
+                    value: "ru-mow",
+                    title: "Москва"
+                },
+                {
+                    value: "ru-spb",
+                    title: "Санкт-Петербург"
+                },
+                {
+                    value: "ru-jew",
+                    title: "Еврейская автономная область"
+                },
+                {
+                    value: "ru-km",
+                    title: "Крым"
+                },
+                {
+                    value: "ru-nen",
+                    title: "Ненецкий автономный округ"
+                },
+                {
+                    value: "ru-khm",
+                    title: "Ханты-Мансийский автономный округ"
+                },
+                {
+                    value: "ru-chu",
+                    title: "Чукотский автономный округ"
+                },
+                {
+                    value: "ru-yam",
+                    title: "Ямало-Ненецкий автономный округ"
+                },
+                {
+                    value: "ru-sev",
+                    title: "Севастополь"
+                },
+
+            ]
         },
         {
             id: 'district',
@@ -560,8 +907,8 @@ mw.loader.using(['mediawiki.api'], function() {
         var inputDestroyed = ListingEditorFormComposer.createInputFormRowCheckbox(
             'input-destroyed', 'Утрачен'
         );
-        var inputRegion = ListingEditorFormComposer.createInputFormRowText(
-            'input-region', 'Регион (ISO-код)'
+        var inputRegion = ListingEditorFormComposer.createInputFormRowSelect(
+            'input-region', 'Регион', monumentListingParameters.getParameter('region').possibleValues
         );
         var inputDistrict = ListingEditorFormComposer.createInputFormRowText(
             'input-district', 'Район'
