@@ -861,6 +861,144 @@ mw.loader.using(['mediawiki.api'], function() {
         }
     };
 
+    var MonumentListingEditorFormComposer = {
+        createForm: function() {
+            var editorForm = ListingEditorFormComposer.createForm();
+
+            var inputObjectName = ListingEditorFormComposer.createInputFormRowText(
+                'input-name', 'Название', 'название объекта', false, true
+            );
+
+            var tableObjectName = ListingEditorFormComposer.createTableFullWidth();
+            tableObjectName.tableElement.append(inputObjectName.rowElement);
+            tableObjectName.tableElement.append(ListingEditorFormComposer.createRowDivider());
+            editorForm.formElement.append(tableObjectName.wrapperElement);
+
+            var inputType = ListingEditorFormComposer.createInputFormRowSelect(
+                'input-type', 'Тип', monumentListingParameters.getParameter('type').possibleValues
+            );
+            var inputDestroyed = ListingEditorFormComposer.createInputFormRowCheckbox(
+                'input-destroyed', 'Утрачен'
+            );
+            var inputRegion = ListingEditorFormComposer.createInputFormRowSelect(
+                'input-region', 'Регион', monumentListingParameters.getParameter('region').possibleValues
+            );
+            var inputDistrict = ListingEditorFormComposer.createInputFormRowText(
+                'input-district', 'Район'
+            );
+            var inputMunicipality = ListingEditorFormComposer.createInputFormRowText(
+                'input-municipality', 'Населённый пункт'
+            );
+            var inputBlock = ListingEditorFormComposer.createInputFormRowText(
+                'input-block', 'Квартал'
+            );
+            var inputAddress = ListingEditorFormComposer.createInputFormRowText(
+                'input-address', 'Адрес', 'улица название, номер дома'
+            );
+            var inputLat = ListingEditorFormComposer.createInputFormRowText(
+                'input-lat', 'Широта', '11.11111', true
+            );
+            var inputLong = ListingEditorFormComposer.createInputFormRowText(
+                'input-long', 'Долгота', '111.11111', true
+            );
+            var inputPrecise = ListingEditorFormComposer.createInputFormRowCheckbox(
+                'input-precise', 'Точные координаты'
+            );
+            var inputYear = ListingEditorFormComposer.createInputFormRowText(
+                'input-year', 'Год постройки', 'yyyy', true
+            );
+            var inputAuthor = ListingEditorFormComposer.createInputFormRowText(
+                'input-author', 'Автор объекта', 'архитектор, скульптор, инженер и т.д.'
+            );
+            var inputKnid = ListingEditorFormComposer.createInputFormRowText(
+                'input-knid', '10-ти значный № объекта', 'dddddddddd', true
+            );
+            var inputComplex = ListingEditorFormComposer.createInputFormRowText(
+                'input-complex', '10-ти значный № комплекса', 'dddddddddd', true
+            );
+            var inputKnidNew = ListingEditorFormComposer.createInputFormRowText(
+                'input-knid-new', '15-ти значный № объекта', 'ddddddddddddddd', true
+            );
+            var inputImage = ListingEditorFormComposer.createInputFormRowText(
+                'input-image', 'Изображение', 'изображение на Викискладе'
+            );
+            var inputWiki = ListingEditorFormComposer.createInputFormRowText(
+                'input-wiki', 'Википедия', 'статья в русской Википедии'
+            );
+            var inputWdid = ListingEditorFormComposer.createInputFormRowText(
+                'input-wdid', 'Викиданные', 'идентификатор Викиданных', true
+            );
+            var inputCommonscat = ListingEditorFormComposer.createInputFormRowText(
+                'input-commonscat', 'Викисклад', 'категория Викисклада'
+            );
+            var inputMunid = ListingEditorFormComposer.createInputFormRowText(
+                'input-munid', 'Викиданные нас. пункта', 'идентификатор Викиданных', true
+            );
+            var inputDocument = ListingEditorFormComposer.createInputFormRowText(
+                'input-document', 'Код документа', 'dDDMMYYYY', true
+            );
+            var inputLink = ListingEditorFormComposer.createInputFormRowText(
+                'input-link', 'Ссылка №1', 'внешняя ссылка с дополнительной информацией об объекте'
+            );
+            var inputLinkExtra = ListingEditorFormComposer.createInputFormRowText(
+                'input-linkextra', 'Ссылка №2', 'внешняя ссылка с дополнительной информацией об объекте'
+            );
+
+            var tableObjectProperties = ListingEditorFormComposer.createTableTwoColumns();
+
+            tableObjectProperties.leftTableElement.append(inputType.rowElement);
+            tableObjectProperties.leftTableElement.append(inputDestroyed.rowElement);
+            tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
+            tableObjectProperties.leftTableElement.append(inputRegion.rowElement);
+            tableObjectProperties.leftTableElement.append(inputDistrict.rowElement);
+            tableObjectProperties.leftTableElement.append(inputMunicipality.rowElement);
+            tableObjectProperties.leftTableElement.append(inputBlock.rowElement);
+            tableObjectProperties.leftTableElement.append(inputAddress.rowElement);
+            tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
+            tableObjectProperties.leftTableElement.append(inputLat.rowElement);
+            tableObjectProperties.leftTableElement.append(inputLong.rowElement);
+            tableObjectProperties.leftTableElement.append(inputPrecise.rowElement);
+            tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
+            tableObjectProperties.leftTableElement.append(inputYear.rowElement);
+            tableObjectProperties.leftTableElement.append(inputAuthor.rowElement);
+
+            tableObjectProperties.rightTableElement.append(inputKnid.rowElement);
+            tableObjectProperties.rightTableElement.append(inputComplex.rowElement);
+            tableObjectProperties.rightTableElement.append(inputKnidNew.rowElement);
+            tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
+            tableObjectProperties.rightTableElement.append(inputImage.rowElement);
+            tableObjectProperties.rightTableElement.append(inputWiki.rowElement);
+            tableObjectProperties.rightTableElement.append(inputWdid.rowElement);
+            tableObjectProperties.rightTableElement.append(inputCommonscat.rowElement);
+            tableObjectProperties.rightTableElement.append(inputMunid.rowElement);
+            tableObjectProperties.rightTableElement.append(inputDocument.rowElement);
+            tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
+            tableObjectProperties.rightTableElement.append(inputLink.rowElement);
+            tableObjectProperties.rightTableElement.append(inputLinkExtra.rowElement);
+            tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
+
+            editorForm.formElement.append(tableObjectProperties.wrapperElement);
+
+            var tableObjectDescription = ListingEditorFormComposer.createTableFullWidth();
+
+            var objectDescriptionRow = ListingEditorFormComposer.createObjectDescriptionRow();
+            tableObjectDescription.tableElement.append(objectDescriptionRow.row);
+            tableObjectDescription.tableElement.append(ListingEditorFormComposer.createRowDivider());
+
+            editorForm.formElement.append(tableObjectDescription.wrapperElement);
+
+            var tableChanges = ListingEditorFormComposer.createTableFullWidth();
+
+            var changesDescriptionRow = ListingEditorFormComposer.createChangesDescriptionRow();
+            tableChanges.tableElement.append(ListingEditorFormComposer.createRowDivider());
+            tableChanges.tableElement.append(changesDescriptionRow.row);
+
+            editorForm.formElement.append(tableChanges.wrapperElement);
+
+            return editorForm;
+        }
+    };
+
     CulturalHeritageListingEditor.Core = function() {
         var TRANSLATIONS = {
             addTitle: 'Добавить объект',
@@ -886,141 +1024,10 @@ mw.loader.using(['mediawiki.api'], function() {
         // be limited to the specified width
         var MAX_DIALOG_WIDTH = 1200;
 
-        var EDITOR_FORM_SELECTOR = '#listing-editor';
         var EDITOR_SUMMARY_SELECTOR = '#input-summary';
         var EDITOR_MINOR_EDIT_SELECTOR = '#input-minor';
 
-        var editorForm = ListingEditorFormComposer.createForm();
-
-        var inputObjectName = ListingEditorFormComposer.createInputFormRowText(
-            'input-name', 'Название', 'название объекта', false, true
-        );
-
-        var tableObjectName = ListingEditorFormComposer.createTableFullWidth();
-        tableObjectName.tableElement.append(inputObjectName.rowElement);
-        tableObjectName.tableElement.append(ListingEditorFormComposer.createRowDivider());
-        editorForm.formElement.append(tableObjectName.wrapperElement);
-
-        var inputType = ListingEditorFormComposer.createInputFormRowSelect(
-            'input-type', 'Тип', monumentListingParameters.getParameter('type').possibleValues
-        );
-        var inputDestroyed = ListingEditorFormComposer.createInputFormRowCheckbox(
-            'input-destroyed', 'Утрачен'
-        );
-        var inputRegion = ListingEditorFormComposer.createInputFormRowSelect(
-            'input-region', 'Регион', monumentListingParameters.getParameter('region').possibleValues
-        );
-        var inputDistrict = ListingEditorFormComposer.createInputFormRowText(
-            'input-district', 'Район'
-        );
-        var inputMunicipality = ListingEditorFormComposer.createInputFormRowText(
-            'input-municipality', 'Населённый пункт'
-        );
-        var inputBlock = ListingEditorFormComposer.createInputFormRowText(
-            'input-block', 'Квартал'
-        );
-        var inputAddress = ListingEditorFormComposer.createInputFormRowText(
-            'input-address', 'Адрес', 'улица название, номер дома'
-        );
-        var inputLat = ListingEditorFormComposer.createInputFormRowText(
-            'input-lat', 'Широта', '11.11111', true
-        );
-        var inputLong = ListingEditorFormComposer.createInputFormRowText(
-            'input-long', 'Долгота', '111.11111', true
-        );
-        var inputPrecise = ListingEditorFormComposer.createInputFormRowCheckbox(
-            'input-precise', 'Точные координаты'
-        );
-        var inputYear = ListingEditorFormComposer.createInputFormRowText(
-            'input-year', 'Год постройки', 'yyyy', true
-        );
-        var inputAuthor = ListingEditorFormComposer.createInputFormRowText(
-            'input-author', 'Автор объекта', 'архитектор, скульптор, инженер и т.д.'
-        );
-        var inputKnid = ListingEditorFormComposer.createInputFormRowText(
-            'input-knid', '10-ти значный № объекта', 'dddddddddd', true
-        );
-        var inputComplex = ListingEditorFormComposer.createInputFormRowText(
-            'input-complex', '10-ти значный № комплекса', 'dddddddddd', true
-        );
-        var inputKnidNew = ListingEditorFormComposer.createInputFormRowText(
-            'input-knid-new', '15-ти значный № объекта', 'ddddddddddddddd', true
-        );
-        var inputImage = ListingEditorFormComposer.createInputFormRowText(
-            'input-image', 'Изображение', 'изображение на Викискладе'
-        );
-        var inputWiki = ListingEditorFormComposer.createInputFormRowText(
-            'input-wiki', 'Википедия', 'статья в русской Википедии'
-        );
-        var inputWdid = ListingEditorFormComposer.createInputFormRowText(
-            'input-wdid', 'Викиданные', 'идентификатор Викиданных', true
-        );
-        var inputCommonscat = ListingEditorFormComposer.createInputFormRowText(
-            'input-commonscat', 'Викисклад', 'категория Викисклада'
-        );
-        var inputMunid = ListingEditorFormComposer.createInputFormRowText(
-            'input-munid', 'Викиданные нас. пункта', 'идентификатор Викиданных', true
-        );
-        var inputDocument = ListingEditorFormComposer.createInputFormRowText(
-            'input-document', 'Код документа', 'dDDMMYYYY', true
-        );
-        var inputLink = ListingEditorFormComposer.createInputFormRowText(
-            'input-link', 'Ссылка №1', 'внешняя ссылка с дополнительной информацией об объекте'
-        );
-        var inputLinkExtra = ListingEditorFormComposer.createInputFormRowText(
-            'input-linkextra', 'Ссылка №2', 'внешняя ссылка с дополнительной информацией об объекте'
-        );
-
-        var tableObjectProperties = ListingEditorFormComposer.createTableTwoColumns();
-
-        tableObjectProperties.leftTableElement.append(inputType.rowElement);
-        tableObjectProperties.leftTableElement.append(inputDestroyed.rowElement);
-        tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
-        tableObjectProperties.leftTableElement.append(inputRegion.rowElement);
-        tableObjectProperties.leftTableElement.append(inputDistrict.rowElement);
-        tableObjectProperties.leftTableElement.append(inputMunicipality.rowElement);
-        tableObjectProperties.leftTableElement.append(inputBlock.rowElement);
-        tableObjectProperties.leftTableElement.append(inputAddress.rowElement);
-        tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
-        tableObjectProperties.leftTableElement.append(inputLat.rowElement);
-        tableObjectProperties.leftTableElement.append(inputLong.rowElement);
-        tableObjectProperties.leftTableElement.append(inputPrecise.rowElement);
-        tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
-        tableObjectProperties.leftTableElement.append(inputYear.rowElement);
-        tableObjectProperties.leftTableElement.append(inputAuthor.rowElement);
-
-        tableObjectProperties.rightTableElement.append(inputKnid.rowElement);
-        tableObjectProperties.rightTableElement.append(inputComplex.rowElement);
-        tableObjectProperties.rightTableElement.append(inputKnidNew.rowElement);
-        tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
-        tableObjectProperties.rightTableElement.append(inputImage.rowElement);
-        tableObjectProperties.rightTableElement.append(inputWiki.rowElement);
-        tableObjectProperties.rightTableElement.append(inputWdid.rowElement);
-        tableObjectProperties.rightTableElement.append(inputCommonscat.rowElement);
-        tableObjectProperties.rightTableElement.append(inputMunid.rowElement);
-        tableObjectProperties.rightTableElement.append(inputDocument.rowElement);
-        tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
-        tableObjectProperties.rightTableElement.append(inputLink.rowElement);
-        tableObjectProperties.rightTableElement.append(inputLinkExtra.rowElement);
-        tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
-
-        editorForm.formElement.append(tableObjectProperties.wrapperElement);
-
-        var tableObjectDescription = ListingEditorFormComposer.createTableFullWidth();
-
-        var objectDescriptionRow = ListingEditorFormComposer.createObjectDescriptionRow();
-        tableObjectDescription.tableElement.append(objectDescriptionRow.row);
-        tableObjectDescription.tableElement.append(ListingEditorFormComposer.createRowDivider());
-
-        editorForm.formElement.append(tableObjectDescription.wrapperElement);
-
-        var tableChanges = ListingEditorFormComposer.createTableFullWidth();
-
-        var changesDescriptionRow = ListingEditorFormComposer.createChangesDescriptionRow();
-        tableChanges.tableElement.append(ListingEditorFormComposer.createRowDivider());
-        tableChanges.tableElement.append(changesDescriptionRow.row);
-
-        editorForm.formElement.append(tableChanges.wrapperElement);
+        var currentForm = null;
 
         var api = new mw.Api();
         var MODE_ADD = 'add';
@@ -1029,7 +1036,7 @@ mw.loader.using(['mediawiki.api'], function() {
         // addEditButtons() function
         var SAVE_FORM_SELECTOR = '#progress-dialog';
         var CAPTCHA_FORM_SELECTOR = '#captcha-dialog';
-        var sectionText, inlineListing, replacements = {};
+        var sectionText, replacements = {};
 
         /**
          * Return false if the current page should not enable the listing editor.
@@ -1158,15 +1165,16 @@ mw.loader.using(['mediawiki.api'], function() {
                     listingTemplateAsMap = wikiTextToListing(listingTemplateWikiSyntax);
                 }
                 // if a listing editor dialog is already open, get rid of it
-                if ($(EDITOR_FORM_SELECTOR).length > 0) {
-                    $(EDITOR_FORM_SELECTOR).dialog('destroy').remove();
+                if (currentForm && currentForm.dialog("isOpen")) {
+                    currentForm.dialog("destroy");
                 }
-                var form = $(createForm(mode, listingTemplateAsMap));
+
+                currentForm = $(createForm(mode, listingTemplateAsMap));
                 // wide dialogs on huge screens look terrible
                 var windowWidth = $(window).width();
                 var dialogWidth = (windowWidth > MAX_DIALOG_WIDTH) ? MAX_DIALOG_WIDTH : 'auto';
                 // modal form - must submit or cancel
-                form.dialog({
+                currentForm.dialog({
                     modal: true,
                     height: 'auto',
                     width: dialogWidth,
@@ -1205,7 +1213,7 @@ mw.loader.using(['mediawiki.api'], function() {
          * listing, pre-populate the form input fields with the existing values.
          */
         var createForm = function(mode, listingTemplateAsMap) {
-            var form = editorForm.formElement;
+            var form = MonumentListingEditorFormComposer.createForm().formElement;
 
             // populate the empty form with existing values
             monumentListingParameters.foreachParameter(function(parameterData) {
@@ -1605,7 +1613,7 @@ mw.loader.using(['mediawiki.api'], function() {
          */
         var saveFailed = function(msg) {
             $(SAVE_FORM_SELECTOR).dialog('destroy').remove();
-            $(EDITOR_FORM_SELECTOR).dialog('open');
+            currentForm.dialog('open');
             alert(msg);
         };
 
