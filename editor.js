@@ -1148,6 +1148,13 @@ mw.loader.using(['mediawiki.api'], function() {
             });
         };
 
+        var closeCurrentForm = function() {
+            if (currentForm && currentForm.dialog("isOpen")) {
+                currentForm.dialog("destroy");
+                currentForm = null;
+            }
+        };
+
         /**
          * This method is called asynchronously after the initListingEditorDialog()
          * method has retrieved the existing wiki section description that the
@@ -1165,9 +1172,7 @@ mw.loader.using(['mediawiki.api'], function() {
                     listingTemplateAsMap = wikiTextToListing(listingTemplateWikiSyntax);
                 }
                 // if a listing editor dialog is already open, get rid of it
-                if (currentForm && currentForm.dialog("isOpen")) {
-                    currentForm.dialog("destroy");
-                }
+                closeCurrentForm();
 
                 currentForm = $(createForm(mode, listingTemplateAsMap));
                 // wide dialogs on huge screens look terrible
@@ -1190,14 +1195,14 @@ mw.loader.using(['mediawiki.api'], function() {
                             text: TRANSLATIONS.submit, click: function() {
                                 if (validateForm()) {
                                     formToText(mode, listingTemplateWikiSyntax, listingTemplateAsMap, sectionNumber);
-                                    $(this).dialog('close');
+                                    closeCurrentForm();
                                 }
                             }
                         },
                         {
                             text: TRANSLATIONS.cancel,
                             click: function() {
-                                $(this).dialog('destroy').remove();
+                                closeCurrentForm();
                             }
                         }
                     ],
