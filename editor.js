@@ -398,8 +398,7 @@ mw.loader.using(['mediawiki.api'], function() {
                 {
                     value: "ru-sev",
                     title: "Севастополь"
-                },
-
+                }
             ]
         },
         {
@@ -1056,10 +1055,28 @@ mw.loader.using(['mediawiki.api'], function() {
             ) {
                 return false;
             }
-            if (mw.config.get('wgPageName').indexOf('Культурное_наследие_России') < 0) {
-                return false;
-            }
-            return true;
+
+            return isCulturalHeritagePage() && !isDiffMode();
+        };
+
+        /**
+         * Whether we are viewing page in "diff" mode.
+         *
+         * @returns {boolean}
+         */
+        var isDiffMode = function()
+        {
+            return $('table.diff').length > 0;
+        };
+
+        /**
+         * Whether current page is related to Russian Cultural Heritage.
+         *
+         * @returns {boolean}
+         */
+        var isCulturalHeritagePage = function()
+        {
+            return mw.config.get('wgPageName').indexOf('Культурное_наследие_России') >= 0;
         };
 
         /**
