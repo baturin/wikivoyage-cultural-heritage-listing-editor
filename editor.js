@@ -668,6 +668,140 @@ mw.loader.using(['mediawiki.api'], function() {
         }
     };
 
+    function runSequence(functions, onSuccess, results) {
+        if (!results) {
+            results = [];
+        }
+
+        if (functions.length > 0) {
+            var firstFunction = functions[0];
+            firstFunction(function(result) {
+                results.push(result);
+                setTimeout( // hack to break recursion chain
+                    function() {
+                        runSequence(functions.slice(1), onSuccess, results)
+                    },
+                    0
+                );
+            });
+        } else {
+            onSuccess(results);
+        }
+    }
+
+    var CommonsApi = {
+        baseUrl: 'https://commons.wikimedia.org/w/api.php',
+
+        executeRequest: function(parameters, onSuccess) {
+            $.ajax({
+                url: this.baseUrl,
+                data: parameters,
+                crossDomain: true,
+                dataType: 'jsonp'
+            }).done(function(data) {
+                onSuccess(data);
+            });
+        },
+
+        getCategoryFiles: function(category, limit, onSuccess) {
+            var self = this;
+
+            self.executeRequest(
+                {
+                    'action': 'query',
+                    'list': 'categorymembers',
+                    'cmtype': 'file',
+                    'cmtitle': 'Category:' + category,
+                    'cmlimit': 'max',
+                    'format': 'json'
+                },
+                function(data) {
+                    if (data.query && data.query.categorymembers) {
+                        var files = [];
+                        data.query.categorymembers.forEach(function(member) {
+                            if (member.title) {
+                                files.push(member.title);
+                            }
+                        });
+
+                        onSuccess(files);
+                    }
+                }
+            );
+        },
+
+        getCategoryImages: function(category, limit, onSucess) {
+            this.getCategoryFiles(category, limit, function(files) {
+                var images = [];
+                files.forEach(function(file) {
+                    var extension = file.toLowerCase().substr(file.length - 4);
+                    if (extension === '.jpg' || extension === '.png' || extension === '.gif') {
+                        images.push(file);
+                    }
+                });
+                onSucess(images);
+            })
+        },
+
+        getImageInfo: function(image, onSuccess) {
+            var self = this;
+
+            self.executeRequest(
+                {
+                    'action': 'query',
+                    'titles': image,
+                    'prop': 'imageinfo|revisions',
+                    'iiprop': 'url',
+                    'iiurlwidth': '200',
+                    'iiurlheight': '200',
+                    'rvprop': 'content',
+                    'rvlimit': '1',
+                    'format': 'json'
+                },
+                function(data) {
+                    if (!data.query || !data.query.pages) {
+                        return;
+                    }
+
+                    var pages = data.query.pages;
+                    var firstPage = pages[Object.keys(pages)[0]];
+                    if (!firstPage || !firstPage.imageinfo || firstPage.imageinfo.length <= 0) {
+                        return;
+                    }
+                    var text = '';
+                    if (firstPage.revisions && firstPage.revisions.length > 0) {
+                        var revision = firstPage.revisions[0];
+                        if (revision['*']) {
+                            text = revision['*'];
+                        }
+                    }
+
+                    var imageInfo = firstPage.imageinfo[0];
+                    onSuccess({
+                        'image': image,
+                        'thumb': imageInfo.thumburl,
+                        'text': text,
+                        'url': imageInfo.url
+                    });
+                }
+            )
+        },
+
+        getImagesInfo: function(images, onSuccess) {
+            var self = this;
+            runSequence(
+                images.map(function(image) {
+                    return function(onSuccess) {
+                        self.getImageInfo(image, onSuccess);
+                    }
+                }),
+                function(imageInfos) {
+                    onSuccess(imageInfos);
+                }
+            );
+        }
+    };
+
     var ListingEditorFormComposer = {
         createInputFormRow: function(inputElementId, labelText)
         {
@@ -863,6 +997,43 @@ mw.loader.using(['mediawiki.api'], function() {
         }
     };
 
+    var CommonsImagesSelector = {
+        loadImagesFromWLMCategory: function(knid, onSuccess) {
+            var self = this;
+            if (!knid) {
+                onSuccess([]);
+            } else {
+                CommonsApi.getCategoryImages(
+                    'WLM/' + knid, 'max',
+                    function (images) {
+                        self.loadImages(images, 'wlm', onSuccess);
+                    }
+                );
+            }
+        },
+
+        loadImagesFromCommonsCategory: function(listItem, onSuccess) {
+            var self = this;
+            if (!listItem.data.commonscat) {
+                onSuccess();
+            } else {
+                CommonsApi.getCategoryImages(
+                    listItem.data.commonscat, 'max',
+                    function (images) {
+                        self.loadImages(listItem, images, 'commons', onSuccess);
+                    }
+                );
+            }
+        },
+
+        loadImages: function (images, categoryType, onSuccess) {
+            var self = this;
+            CommonsApi.getImagesInfo(images, function (imagesInfo) {
+                onSuccess(imagesInfo);
+            });
+        }
+    };
+
     var MonumentListingEditorFormComposer = {
         createForm: function() {
             var editorForm = ListingEditorFormComposer.createForm();
@@ -964,11 +1135,39 @@ mw.loader.using(['mediawiki.api'], function() {
             tableObjectProperties.leftTableElement.append(inputYear.rowElement);
             tableObjectProperties.leftTableElement.append(inputAuthor.rowElement);
 
+            var selectImageLink = $("<a>", {
+                href: 'javascript:;',
+                html: 'выбрать изображение из галереи'
+            });
+            var selectImageRow = $('<tr>').append($('<td>')).append($('<td>').append(selectImageLink));
+            selectImageLink.click(function() {
+                var dialogElement = $('<div>', {'html': 'загрузка...'});
+                dialogElement.dialog({
+                    modal: true,
+                    height: 400,
+                    width: '400px',
+                    title: 'Выбор изображения из галереи'
+                });
+                CommonsImagesSelector.loadImagesFromWLMCategory(inputKnid.inputElement.val(), function(images) {
+                    dialogElement.html('');
+                    images.forEach(function(image) {
+                        var imageThumbElement = $('<img>',  {'alt': 'Image', 'src': image.thumb});
+                        imageThumbElement.click(function() {
+                            var imageName = image.image.replace(/^File:/, '');
+                            inputImage.inputElement.val(imageName);
+                            dialogElement.dialog('destroy')
+                        });
+                        dialogElement.append($('<div>', {style: 'padding: 5px;'}).append(imageThumbElement));
+                    });
+                });
+            });
+
             tableObjectProperties.rightTableElement.append(inputKnid.rowElement);
             tableObjectProperties.rightTableElement.append(inputComplex.rowElement);
             tableObjectProperties.rightTableElement.append(inputKnidNew.rowElement);
             tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
             tableObjectProperties.rightTableElement.append(inputImage.rowElement);
+            tableObjectProperties.rightTableElement.append(selectImageRow);
             tableObjectProperties.rightTableElement.append(inputWiki.rowElement);
             tableObjectProperties.rightTableElement.append(inputWdid.rowElement);
             tableObjectProperties.rightTableElement.append(inputCommonscat.rowElement);
