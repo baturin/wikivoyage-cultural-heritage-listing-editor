@@ -1429,9 +1429,6 @@ mw.loader.using(['mediawiki.api'], function() {
          * editor form and to block submission if any fatal errors are found.
          */
         var validateForm = function() {
-            // newlines in listing description won't render properly in lists, so
-            // replace them with <p> tags
-            $('#input-description').val($.trim($('#input-description').val()).replace(/\n+/g, '<p>'));
             var webRegex = new RegExp('^https?://', 'i');
             var url = $('#input-url').val();
             if (!webRegex.test(url) && url !== '') {
