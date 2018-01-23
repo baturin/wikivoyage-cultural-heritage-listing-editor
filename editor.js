@@ -13,12 +13,10 @@ mw.loader.using(['mediawiki.api'], function() {
 
     var monumentListingParameterDescriptors = [
         {
-            id: 'name',
-            formInputId: 'input-name'
+            id: 'name'
         },
         {
             id: 'type',
-            formInputId: 'input-type',
             possibleValues: [
                 {
                     value: 'architecture',
@@ -39,21 +37,10 @@ mw.loader.using(['mediawiki.api'], function() {
             ]
         },
         {
-            id: 'status',
-            getValue: function() {
-                if ($('#input-destroyed').is(':checked')) {
-                    return 'destroyed';
-                } else {
-                    return '';
-                }
-            },
-            setValue: function(form, value) {
-                $('#input-destroyed', form).attr('checked', value === 'destroyed');
-            }
+            id: 'status'
         },
         {
             id: 'region',
-            formInputId: 'input-region',
             possibleValues: [
                 {
                     value: "",
@@ -402,97 +389,67 @@ mw.loader.using(['mediawiki.api'], function() {
             ]
         },
         {
-            id: 'district',
-            formInputId: 'input-district'
+            id: 'district'
         },
         {
-            id: 'municipality',
-            formInputId: 'input-municipality'
+            id: 'municipality'
         },
         {
-            id: 'block',
-            formInputId: 'input-block'
+            id: 'block'
         },
         {
-            id: 'address',
-            formInputId: 'input-address'
+            id: 'address'
         },
         {
-            id: 'lat',
-            formInputId: 'input-lat'
+            id: 'lat'
         },
         {
-            id: 'long',
-            formInputId: 'input-long'
+            id: 'long'
         },
         {
-            id: 'precise',
-            getValue: function() {
-                if ($('#input-precise').is(':checked')) {
-                    return 'yes';
-                } else {
-                    return 'no';
-                }
-            },
-            setValue: function(form, value) {
-                $('#input-precise', form).prop('checked', value === 'yes')
-            }
+            id: 'precise'
         },
         {
-            id: 'year',
-            formInputId: 'input-year'
+            id: 'year'
         },
         {
-            id: 'author',
-            formInputId: 'input-author'
+            id: 'author'
         },
         {
-            id: 'knid',
-            formInputId: 'input-knid'
+            id: 'knid'
         },
         {
-            id: 'complex',
-            formInputId: 'input-complex'
+            id: 'complex'
         },
         {
-            id: 'knid-new',
-            formInputId: 'input-knid-new'
+            id: 'knid-new'
         },
         {
-            id: 'image',
-            formInputId: 'input-image'
+            id: 'image'
         },
         {
-            id: 'wiki',
-            formInputId: 'input-wiki'
+            id: 'wiki'
         },
         {
-            id: 'wdid',
-            formInputId: 'input-wdid'
+            id: 'wdid'
         },
         {
-            id: 'commonscat',
-            formInputId: 'input-commonscat'
+            id: 'commonscat'
         },
         {
-            id: 'munid',
-            formInputId: 'input-munid'
+            id: 'munid'
         },
         {
-            id: 'document',
-            formInputId: 'input-document'
+            id: 'document'
         },
         {
-            id: 'link',
-            formInputId: 'input-link'
+            id: 'link'
         },
         {
-            id: 'linkextra',
-            formInputId: 'input-linkextra'
+            id: 'linkextra'
         },
         {
-            id: 'description',
-            formInputId: 'input-description'
+            id: 'description'
         }
     ];
 
@@ -513,13 +470,6 @@ mw.loader.using(['mediawiki.api'], function() {
 
             getParameter: function (parameterId) {
                 return this._parametersById[parameterId];
-            },
-
-            foreachParameter: function(callback) {
-                for (var i = 0; i < parameterDescriptors.length; i++) {
-                    var parameterData = parameterDescriptors[i];
-                    callback(parameterData);
-                }
             }
         };
     }
@@ -1196,7 +1146,86 @@ mw.loader.using(['mediawiki.api'], function() {
 
             editorForm.formElement.append(tableChanges.wrapperElement);
 
-            return editorForm;
+            var directMappingInputs = {
+                name: inputObjectName.inputElement,
+                type: inputType.inputElement,
+                region: inputRegion.inputElement,
+                district: inputDistrict.inputElement,
+                municipality: inputMunicipality.inputElement,
+                block: inputBlock.inputElement,
+                address: inputAddress.inputElement,
+                lat: inputLat.inputElement,
+                long: inputLong.inputElement,
+                year: inputYear.inputElement,
+                author: inputAuthor.inputElement,
+                knid: inputKnid.inputElement,
+                complex: inputComplex.inputElement,
+                'knid-new': inputKnidNew.inputElement,
+                image: inputImage.inputElement,
+                wiki: inputWiki.inputElement,
+                wdid: inputWdid.inputElement,
+                commonscat: inputCommonscat.inputElement,
+                munid: inputMunid.inputElement,
+                document: inputDocument.inputElement,
+                link: inputLink.inputElement,
+                linkextra: inputLinkExtra.inputElement,
+                description: objectDescriptionRow.inputDescription
+            };
+
+            return {
+                formElement: editorForm.formElement,
+
+                setValues: function(listing) {
+                    Object.keys(directMappingInputs).forEach(function(key) {
+                        if (listing[key]) {
+                            directMappingInputs[key].val(listing[key]);
+                        }
+                    });
+                    inputDestroyed.inputElement.attr('checked', listing['status'] === 'destroyed');
+                    inputPrecise.inputElement.attr('checked', listing['precise'] === 'yes');
+                },
+
+                getValues: function() {
+                    var listingData = {};
+                    Object.keys(directMappingInputs).forEach(function(key) {
+                        listingData[key] = directMappingInputs[key].val();
+                    });
+                    if (inputDestroyed.inputElement.is(':checked')) {
+                        listingData['status'] = 'destroyed';
+                    } else {
+                        listingData['status'] = '';
+                    }
+                    if (inputPrecise.inputElement.is(':checked')) {
+                        listingData['precise'] = 'yes';
+                    } else {
+                        listingData['precise'] = 'no';
+                    }
+                    listingData['link'] = this._normalizeUrl(listingData['link']);
+                    listingData['linkextra'] = this._normalizeUrl(listingData['linkextra']);
+                    return listingData;
+                },
+
+                getObjectName: function() {
+                    return inputObjectName.inputElement.val();
+                },
+
+                getChangesSummary: function() {
+                    return changesDescriptionRow.inputChangesSummary.val();
+                },
+
+                getChangesIsMinor: function() {
+                    return changesDescriptionRow.inputIsMinorChanges.is(':checked');
+                },
+
+                _normalizeUrl: function(url) {
+                    var webRegex = new RegExp('^https?://', 'i');
+                    if (!webRegex.test(url) && url !== '') {
+                        return 'http://' + url;
+                    } else {
+                        return url;
+                    }
+                }
+            };
         }
     };
 
@@ -1224,9 +1253,6 @@ mw.loader.using(['mediawiki.api'], function() {
         // listing editor dialog will fill the available space, otherwise it will
         // be limited to the specified width
         var MAX_DIALOG_WIDTH = 1200;
-
-        var EDITOR_SUMMARY_SELECTOR = '#input-summary';
-        var EDITOR_MINOR_EDIT_SELECTOR = '#input-minor';
 
         var currentForm = null;
 
@@ -1368,8 +1394,8 @@ mw.loader.using(['mediawiki.api'], function() {
         };
 
         var closeCurrentForm = function() {
-            if (currentForm && currentForm.dialog("isOpen")) {
-                currentForm.dialog("destroy");
+            if (currentForm && currentForm.formElement.dialog("isOpen")) {
+                currentForm.formElement.dialog("destroy");
                 currentForm = null;
             }
         };
@@ -1393,12 +1419,15 @@ mw.loader.using(['mediawiki.api'], function() {
                 // if a listing editor dialog is already open, get rid of it
                 closeCurrentForm();
 
-                currentForm = $(createForm(mode, listingTemplateAsMap));
+                currentForm = MonumentListingEditorFormComposer.createForm();
+                // populate the empty form with existing values
+                currentForm.setValues(listingTemplateAsMap);
+
                 // wide dialogs on huge screens look terrible
                 var windowWidth = $(window).width();
                 var dialogWidth = (windowWidth > MAX_DIALOG_WIDTH) ? MAX_DIALOG_WIDTH : 'auto';
                 // modal form - must submit or cancel
-                currentForm.dialog({
+                currentForm.formElement.dialog({
                     modal: true,
                     height: 'auto',
                     width: dialogWidth,
@@ -1412,10 +1441,8 @@ mw.loader.using(['mediawiki.api'], function() {
                         },
                         {
                             text: TRANSLATIONS.submit, click: function() {
-                                if (validateForm()) {
-                                    formToText(mode, listingTemplateWikiSyntax, listingTemplateAsMap, sectionNumber);
-                                    closeCurrentForm();
-                                }
+                                formToText(mode, listingTemplateWikiSyntax, listingTemplateAsMap, sectionNumber);
+                                closeCurrentForm();
                             }
                         },
                         {
@@ -1430,30 +1457,6 @@ mw.loader.using(['mediawiki.api'], function() {
                     }
                 });
             });
-        };
-
-        /**
-         * Generate the form UI for the listing editor.  If editing an existing
-         * listing, pre-populate the form input fields with the existing values.
-         */
-        var createForm = function(mode, listingTemplateAsMap) {
-            var form = MonumentListingEditorFormComposer.createForm().formElement;
-
-            // populate the empty form with existing values
-            monumentListingParameters.foreachParameter(function(parameterData) {
-                var inputId = parameterData.formInputId;
-                var input = $('#' + inputId, form);
-
-                var paramValue = listingTemplateAsMap[parameterData.id];
-                if (paramValue) {
-                    if (parameterData.setValue) {
-                        parameterData.setValue(form, paramValue);
-                    } else {
-                        input.val(paramValue);
-                    }
-                }
-            });
-            return form;
         };
 
         var replaceSpecial = function(str) {
@@ -1649,19 +1652,6 @@ mw.loader.using(['mediawiki.api'], function() {
         };
 
         /**
-         * Logic invoked on form submit to analyze the values entered into the
-         * editor form and to block submission if any fatal errors are found.
-         */
-        var validateForm = function() {
-            var webRegex = new RegExp('^https?://', 'i');
-            var url = $('#input-url').val();
-            if (!webRegex.test(url) && url !== '') {
-                $('#input-url').val('http://' + url);
-            }
-            return true;
-        };
-
-        /**
          * Convert the listing editor form entry fields into wiki text.  This
          * method converts the form entry fields into a listing template string,
          * replaces the original template string in the section text with the
@@ -1669,14 +1659,11 @@ mw.loader.using(['mediawiki.api'], function() {
          * server.
          */
         var formToText = function(mode, listingTemplateWikiSyntax, listing, sectionNumber) {
-            monumentListingParameters.foreachParameter(function(parameterData) {
-                if (parameterData.getValue) {
-                    listing[parameterData.id] = parameterData.getValue();
-                } else {
-                    var input = $("#" + parameterData.formInputId);
-                    listing[parameterData.id] = input.val();
-                }
+            var formData = currentForm.getValues();
+            Object.keys(formData).forEach(function(key) {
+                listing[key] = formData[key];
             });
+
             var text = serializeMonumentListing(listing);
 
             var summary = editSummarySection();
@@ -1685,12 +1672,14 @@ mw.loader.using(['mediawiki.api'], function() {
             } else {
                 summary = updateSectionTextWithEditedListing(summary, text, listingTemplateWikiSyntax);
             }
-            summary += $("#input-name").val();
-            if ($(EDITOR_SUMMARY_SELECTOR).val() !== '') {
-                summary += ' - ' + $(EDITOR_SUMMARY_SELECTOR).val();
+            summary += currentForm.getObjectName();
+            var formSummary = currentForm.getChangesSummary();
+
+            if (formSummary !== '') {
+                summary += ' - ' + formSummary;
             }
 
-            var minor = $(EDITOR_MINOR_EDIT_SELECTOR).is(':checked') ? true : false;
+            var minor = currentForm.getChangesIsMinor();
 
             saveForm(summary, minor, sectionNumber, '', '');
         };
@@ -1834,7 +1823,7 @@ mw.loader.using(['mediawiki.api'], function() {
          */
         var saveFailed = function(msg) {
             $(SAVE_FORM_SELECTOR).dialog('destroy').remove();
-            currentForm.dialog('open');
+            currentForm.formElement.dialog('open');
             alert(msg);
         };
 
