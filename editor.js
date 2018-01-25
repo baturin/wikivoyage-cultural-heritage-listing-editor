@@ -962,15 +962,15 @@ mw.loader.using(['mediawiki.api'], function() {
             }
         },
 
-        loadImagesFromCommonsCategory: function(listItem, onSuccess) {
+        loadImagesFromCommonsCategory: function(commonsCat, onSuccess) {
             var self = this;
-            if (!listItem.data.commonscat) {
-                onSuccess();
+            if (!commonsCat) {
+                onSuccess([]);
             } else {
                 CommonsApi.getCategoryImages(
-                    listItem.data.commonscat, 'max',
+                    commonsCat, 'max',
                     function (images) {
-                        self.loadImages(listItem, images, 'commons', onSuccess);
+                        self.loadImages(images, 'commons', onSuccess);
                     }
                 );
             }
@@ -1091,23 +1091,98 @@ mw.loader.using(['mediawiki.api'], function() {
             });
             var selectImageRow = $('<tr>').append($('<td>')).append($('<td>').append(selectImageLink));
             selectImageLink.click(function() {
-                var dialogElement = $('<div>', {'html': 'загрузка...'});
+                var knid = inputKnid.inputElement.val();
+                var commonsCat = inputCommonscat.inputElement.val();
+                var dialogElement = $('<div>');
                 dialogElement.dialog({
                     modal: true,
                     height: 400,
-                    width: '400px',
+                    width: 800,
                     title: 'Выбор изображения из галереи'
                 });
-                CommonsImagesSelector.loadImagesFromWLMCategory(inputKnid.inputElement.val(), function(images) {
-                    dialogElement.html('');
+
+                var loadingElement = $('<div>', {'html': 'загрузка...'});
+                var contentElement = $('<div>');
+                dialogElement.append(contentElement);
+                dialogElement.append(loadingElement);
+
+                function createImageElement(image)
+                {
+                    var imageThumbElement = $('<img>',  {'alt': 'Image', 'src': image.thumb});
+                    var commonsUrl = 'https://commons.wikimedia.org/wiki/' + image.image;
+                    var selectLink = $('<a>', {
+                        href: 'javascript:;',
+                        html: '[выбрать]'
+                    });
+                    var viewLink = $('<a>', {
+                        href: commonsUrl,
+                        target: '_blank',
+                        html: '[смотреть]'
+                    });
+
+                    selectLink.click(function() {
+                        var imageName = image.image.replace(/^File:/, '');
+                        inputImage.inputElement.val(imageName);
+                        dialogElement.dialog('destroy')
+                    });
+
+                    var imageBlock = $('<div>', {
+                        style: 'padding: 5px; width: 210px; display: flex; flex-direction: column;' +
+                        'justify-content: center; align-items: center; align-content: center;'
+                    });
+                    imageBlock.append(imageThumbElement);
+                    imageBlock.append(selectLink);
+                    imageBlock.append(viewLink);
+                    return imageBlock;
+                }
+
+                function createImagesBlock(blockTitle, images)
+                {
+                    var block = $('<div>');
+                    block.append($('<h5>', {'html': blockTitle}));
+
+                    var currentRow = null;
+                    var imagesInRow = 0;
+
+                    function addImage(image) {
+                        if (!currentRow || imagesInRow >= 4) {
+                            currentRow = $('<div>', {
+                                style: 'display: flex; flex-direction: row'
+                            });
+                            block.append(currentRow);
+                            imagesInRow = 0;
+                        }
+
+                        currentRow.append(createImageElement(image));
+                        imagesInRow++;
+                    }
+
                     images.forEach(function(image) {
-                        var imageThumbElement = $('<img>',  {'alt': 'Image', 'src': image.thumb});
-                        imageThumbElement.click(function() {
-                            var imageName = image.image.replace(/^File:/, '');
-                            inputImage.inputElement.val(imageName);
-                            dialogElement.dialog('destroy')
-                        });
-                        dialogElement.append($('<div>', {style: 'padding: 5px;'}).append(imageThumbElement));
+                        addImage(image);
+                    });
+
+                    return block;
+                }
+
+                CommonsImagesSelector.loadImagesFromWLMCategory(knid, function(wlmImages) {
+                    if (wlmImages.length > 0) {
+                        contentElement.append(createImagesBlock(
+                            "Изображения из категории WLM", wlmImages
+                        ));
+                    }
+
+                    CommonsImagesSelector.loadImagesFromCommonsCategory(commonsCat, function (commonsCatImages) {
+                        if (commonsCatImages.length > 0) {
+                            contentElement.append(createImagesBlock(
+                                "Изображения из категории Commons", commonsCatImages
+                            ));
+                        }
+                        if (wlmImages.length === 0 && commonsCatImages.length === 0) {
+                            contentElement.append(
+                                $('<div>', {'html': "Для данного объекта нет ни одного изображения"})
+                            );
+                        }
+                        loadingElement.hide();
                     });
                 });
             });
