@@ -551,7 +551,8 @@ mw.loader.using(['mediawiki.api'], function() {
         serializer.writeParametersLine(["type", "status"]);
         serializer.writeParametersLine(["lat", "long", "precise"]);
         serializer.writeParameterLine("name");
-        serializer.writeParametersLine(["knid", "complex"]);
+        serializer.writeParameterLine("knid");
+        serializer.writeParameterLine("complex", true);
         serializer.writeParameterLine("knid-new");
         serializer.writeParametersLine(["region", "district"]);
         serializer.writeParametersLine(["municipality", "munid"]);
@@ -565,7 +566,7 @@ mw.loader.using(['mediawiki.api'], function() {
         serializer.writeParameterLine("commonscat");
         serializer.writeParameterLine("link");
         serializer.writeParameterLine("linkextra", true);
-        serializer.writeParameterLine("document");
+        serializer.writeParameterLine("document", true);
         serializer.writeParameterLine("doc", true);
         serializer.writeParameterLine("style", true);
         serializer.writeParameterLine("protection", true);
