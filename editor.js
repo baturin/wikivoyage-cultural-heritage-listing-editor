@@ -1026,7 +1026,7 @@ mw.loader.using(['mediawiki.api'], function() {
                 });
 
                 selectLink.click(function() {
-                    var imageName = image.image.replace(/^File:/, '');
+                    var imageName = image.image.replace(/^File:/, '').replace(' ', '_');
                     onImageSelected(imageName);
                     dialogElement.dialog('destroy')
                 });
