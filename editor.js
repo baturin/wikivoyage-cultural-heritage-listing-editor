@@ -890,7 +890,7 @@ mw.loader.using(['mediawiki.api'], function() {
             row.append($('<td>').append(inputChangesSummary).append(spanIsMinorChanges));
             return {
                 row: row,
-                inputChangesSummary: inputIsMinorChanges,
+                inputChangesSummary: inputChangesSummary,
                 inputIsMinorChanges: inputIsMinorChanges
             };
         },
