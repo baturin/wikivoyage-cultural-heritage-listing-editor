@@ -850,6 +850,17 @@ mw.loader.using(['mediawiki.api'], function() {
                 )
             );
         },
+        createRowLink: function(linkText) {
+            var linkElement = $("<a>", {
+                href: 'javascript:;',
+                html: linkText
+            });
+            var rowElement = $('<tr>').append($('<td>')).append($('<td>').append(linkElement));
+            return {
+                rowElement: rowElement,
+                linkElement: linkElement
+            }
+        },
         createChangesDescriptionRow: function () {
             var inputChangesSummary = $('<input>', {
                 type: "text",
@@ -947,7 +958,7 @@ mw.loader.using(['mediawiki.api'], function() {
         }
     };
 
-    var CommonsImagesSelector = {
+    var CommonsImagesLoader = {
         loadImagesFromWLMCategory: function(knid, onSuccess) {
             var self = this;
             if (!knid) {
@@ -980,6 +991,103 @@ mw.loader.using(['mediawiki.api'], function() {
             var self = this;
             CommonsApi.getImagesInfo(images, function (imagesInfo) {
                 onSuccess(imagesInfo);
+            });
+        }
+    };
+
+    var CommonsImagesSelectDialog = {
+        showDialog: function(knid, commonsCat, onImageSelected) {
+            var dialogElement = $('<div>');
+            dialogElement.dialog({
+                modal: true,
+                height: 400,
+                width: 800,
+                title: 'Выбор изображения из галереи'
+            });
+
+            var loadingElement = $('<div>', {'html': 'загрузка...'});
+            var contentElement = $('<div>');
+            dialogElement.append(contentElement);
+            dialogElement.append(loadingElement);
+
+            function createImageElement(image)
+            {
+                var imageThumbElement = $('<img>',  {'alt': 'Image', 'src': image.thumb});
+                var commonsUrl = 'https://commons.wikimedia.org/wiki/' + image.image;
+                var selectLink = $('<a>', {
+                    href: 'javascript:;',
+                    html: '[выбрать]'
+                });
+                var viewLink = $('<a>', {
+                    href: commonsUrl,
+                    target: '_blank',
+                    html: '[смотреть]'
+                });
+
+                selectLink.click(function() {
+                    var imageName = image.image.replace(/^File:/, '');
+                    onImageSelected(imageName);
+                    dialogElement.dialog('destroy')
+                });
+
+                var imageBlock = $('<div>', {
+                    style: 'padding: 5px; width: 210px; display: flex; flex-direction: column;' +
+                    'justify-content: center; align-items: center; align-content: center;'
+                });
+                imageBlock.append(imageThumbElement);
+                imageBlock.append(selectLink);
+                imageBlock.append(viewLink);
+                return imageBlock;
+            }
+
+            function createImagesBlock(blockTitle, images)
+            {
+                var block = $('<div>');
+                block.append($('<h5>', {'html': blockTitle}));
+
+                var currentRow = null;
+                var imagesInRow = 0;
+
+                function addImage(image) {
+                    if (!currentRow || imagesInRow >= 4) {
+                        currentRow = $('<div>', {
+                            style: 'display: flex; flex-direction: row'
+                        });
+                        block.append(currentRow);
+                        imagesInRow = 0;
+                    }
+
+                    currentRow.append(createImageElement(image));
+                    imagesInRow++;
+                }
+
+                images.forEach(function(image) {
+                    addImage(image);
+                });
+
+                return block;
+            }
+
+            CommonsImagesLoader.loadImagesFromWLMCategory(knid, function(wlmImages) {
+                if (wlmImages.length > 0) {
+                    contentElement.append(createImagesBlock(
+                        "Изображения из категории WLM", wlmImages
+                    ));
+                }
+
+                CommonsImagesLoader.loadImagesFromCommonsCategory(commonsCat, function (commonsCatImages) {
+                    if (commonsCatImages.length > 0) {
+                        contentElement.append(createImagesBlock(
+                            "Изображения из категории Commons", commonsCatImages
+                        ));
+                    }
+                    if (wlmImages.length === 0 && commonsCatImages.length === 0) {
+                        contentElement.append(
+                            $('<div>', {'html': "Для данного объекта нет ни одного изображения"})
+                        );
+                    }
+                    loadingElement.hide();
+                });
             });
         }
     };
@@ -1085,106 +1193,15 @@ mw.loader.using(['mediawiki.api'], function() {
             tableObjectProperties.leftTableElement.append(inputYear.rowElement);
             tableObjectProperties.leftTableElement.append(inputAuthor.rowElement);
 
-            var selectImageLink = $("<a>", {
-                href: 'javascript:;',
-                html: 'выбрать изображение из галереи'
-            });
-            var selectImageRow = $('<tr>').append($('<td>')).append($('<td>').append(selectImageLink));
-            selectImageLink.click(function() {
-                var knid = inputKnid.inputElement.val();
-                var commonsCat = inputCommonscat.inputElement.val();
-                var dialogElement = $('<div>');
-                dialogElement.dialog({
-                    modal: true,
-                    height: 400,
-                    width: 800,
-                    title: 'Выбор изображения из галереи'
-                });
-
-                var loadingElement = $('<div>', {'html': 'загрузка...'});
-                var contentElement = $('<div>');
-                dialogElement.append(contentElement);
-                dialogElement.append(loadingElement);
-
-                function createImageElement(image)
-                {
-                    var imageThumbElement = $('<img>',  {'alt': 'Image', 'src': image.thumb});
-                    var commonsUrl = 'https://commons.wikimedia.org/wiki/' + image.image;
-                    var selectLink = $('<a>', {
-                        href: 'javascript:;',
-                        html: '[выбрать]'
-                    });
-                    var viewLink = $('<a>', {
-                        href: commonsUrl,
-                        target: '_blank',
-                        html: '[смотреть]'
-                    });
-
-                    selectLink.click(function() {
-                        var imageName = image.image.replace(/^File:/, '');
-                        inputImage.inputElement.val(imageName);
-                        dialogElement.dialog('destroy')
-                    });
-
-                    var imageBlock = $('<div>', {
-                        style: 'padding: 5px; width: 210px; display: flex; flex-direction: column;' +
-                        'justify-content: center; align-items: center; align-content: center;'
-                    });
-                    imageBlock.append(imageThumbElement);
-                    imageBlock.append(selectLink);
-                    imageBlock.append(viewLink);
-                    return imageBlock;
-                }
-
-                function createImagesBlock(blockTitle, images)
-                {
-                    var block = $('<div>');
-                    block.append($('<h5>', {'html': blockTitle}));
-
-                    var currentRow = null;
-                    var imagesInRow = 0;
-
-                    function addImage(image) {
-                        if (!currentRow || imagesInRow >= 4) {
-                            currentRow = $('<div>', {
-                                style: 'display: flex; flex-direction: row'
-                            });
-                            block.append(currentRow);
-                            imagesInRow = 0;
-                        }
-
-                        currentRow.append(createImageElement(image));
-                        imagesInRow++;
+            var selectImageLinkRow = ListingEditorFormComposer.createRowLink('выбрать изображение из галереи');
+            selectImageLinkRow.linkElement.click(function() {
+                CommonsImagesSelectDialog.showDialog(
+                    inputKnid.inputElement.val(),
+                    inputCommonscat.inputElement.val(),
+                    function (selectedImage) {
+                        inputImage.inputElement.val(selectedImage);
                     }
-
-                    images.forEach(function(image) {
-                        addImage(image);
-                    });
-
-                    return block;
-                }
-
-                CommonsImagesSelector.loadImagesFromWLMCategory(knid, function(wlmImages) {
-                    if (wlmImages.length > 0) {
-                        contentElement.append(createImagesBlock(
-                            "Изображения из категории WLM", wlmImages
-                        ));
-                    }
-
-                    CommonsImagesSelector.loadImagesFromCommonsCategory(commonsCat, function (commonsCatImages) {
-                        if (commonsCatImages.length > 0) {
-                            contentElement.append(createImagesBlock(
-                                "Изображения из категории Commons", commonsCatImages
-                            ));
-                        }
-                        if (wlmImages.length === 0 && commonsCatImages.length === 0) {
-                            contentElement.append(
-                                $('<div>', {'html': "Для данного объекта нет ни одного изображения"})
-                            );
-                        }
-                        loadingElement.hide();
-                    });
-                });
+                )
             });
 
             tableObjectProperties.rightTableElement.append(inputKnid.rowElement);
@@ -1192,7 +1209,7 @@ mw.loader.using(['mediawiki.api'], function() {
             tableObjectProperties.rightTableElement.append(inputKnidNew.rowElement);
             tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
             tableObjectProperties.rightTableElement.append(inputImage.rowElement);
-            tableObjectProperties.rightTableElement.append(selectImageRow);
+            tableObjectProperties.rightTableElement.append(selectImageLinkRow.rowElement);
             tableObjectProperties.rightTableElement.append(inputWiki.rowElement);
             tableObjectProperties.rightTableElement.append(inputWdid.rowElement);
             tableObjectProperties.rightTableElement.append(inputCommonscat.rowElement);
