@@ -758,11 +758,11 @@ mw.loader.using(['mediawiki.api'], function() {
         {
             var rowElement = $('<tr>');
             var label = $('<label>', {
-                for: inputElementId,
+                'for': inputElementId,
                 html: labelText
             });
             var labelColumn = $('<td>', {
-                class: "editor-label-col",
+                'class': "editor-label-col",
                 style: "width: 200px"
             }).append(label);
             var inputColumnElement = $('<td>');
@@ -811,7 +811,7 @@ mw.loader.using(['mediawiki.api'], function() {
             var row = this.createInputFormRow(inputElementId, labelText);
             var inputElement = $('<input>', {
                 type: 'text',
-                class: partialWidth ? 'editor-partialwidth' : 'editor-fullwidth',
+                'class': partialWidth ? 'editor-partialwidth' : 'editor-fullwidth',
                 style: insertSymbols ? 'width: 90%': '',
                 placeholder: placeholderText,
                 id: inputElementId
@@ -819,12 +819,12 @@ mw.loader.using(['mediawiki.api'], function() {
             row.inputColumnElement.append(inputElement);
             if (insertSymbols) {
                 var buttonInsertQuotes = $('<a>', {
-                    class: 'name-quotes-template',
+                    'class': 'name-quotes-template',
                     href: 'javascript:;',
                     html: '«»'
                 });
                 var buttonInsertDash = $('<a>', {
-                    class: 'name-dash-template',
+                    'class': 'name-dash-template',
                     href: 'javascript:;',
                     html: '—'
                 });
@@ -845,7 +845,7 @@ mw.loader.using(['mediawiki.api'], function() {
             return $('<tr>').append(
                 $('<td>', {colspan: "2"}).append(
                     $('<div>', {
-                        class: "listing-divider",
+                        'class': "listing-divider",
                         style: "margin: 3px 0"
                     })
                 )
@@ -865,7 +865,7 @@ mw.loader.using(['mediawiki.api'], function() {
         createChangesDescriptionRow: function () {
             var inputChangesSummary = $('<input>', {
                 type: "text",
-                class: "editor-partialwidth",
+                'class': "editor-partialwidth",
                 placeholder: "что именно было изменено",
                 id: "input-summary"
             });
@@ -874,12 +874,12 @@ mw.loader.using(['mediawiki.api'], function() {
                 id: "input-minor"
             });
             var labelChangesSummary = $('<label>', {
-                for: "input-summary",
+                'for': "input-summary",
                 html: 'Описание изменений'
             });
             var labelIsMinorChanges = $('<label>', {
-                for: "input-minor",
-                class: "listing-tooltip",
+                'for': "input-minor",
+                'class': "listing-tooltip",
                 title: "Установите галочку, если изменение незначительное, например, исправление опечатки",
                 html: 'незначительное изменение?'
             });
@@ -897,16 +897,16 @@ mw.loader.using(['mediawiki.api'], function() {
         createObjectDescriptionRow: function() {
             var inputDescription = $('<textarea>', {
                 rows:"4",
-                class: "editor-fullwidth",
+                'class': "editor-fullwidth",
                 placeholder: "описание объекта",
                 id: "input-description"
             });
             var labelDescription = $('<label>', {
-                for: "input-description",
+                'for': "input-description",
                 html: "Описание"
             });
             var row = $('<tr>');
-            row.append($('<td>', {class: "editor-label-col", style: "width: 200px"}).append(labelDescription));
+            row.append($('<td>', {'class': "editor-label-col", style: "width: 200px"}).append(labelDescription));
             row.append($('<td>').append(inputDescription));
             return {
                 row: row,
@@ -916,7 +916,7 @@ mw.loader.using(['mediawiki.api'], function() {
         createTableFullWidth: function()
         {
             var tableElement = $('<table>', {
-                class: 'editor-fullwidth'
+                'class': 'editor-fullwidth'
             });
             var wrapperElement = $('<div>');
             wrapperElement.append(tableElement);
@@ -928,20 +928,20 @@ mw.loader.using(['mediawiki.api'], function() {
         createTableTwoColumns: function()
         {
             var leftTableElement = $('<table>', {
-                class: "editor-fullwidth"
+                'class': "editor-fullwidth"
             });
             var rightTableElement = $('<table>', {
-                class: "editor-fullwidth"
+                'class': "editor-fullwidth"
             });
             var wrapperElement = $('<div>');
             wrapperElement.append(
                 $('<div>', {
-                    class: 'listing-col listing-span_1_of_2'
+                    'class': 'listing-col listing-span_1_of_2'
                 }).append(leftTableElement)
             );
             wrapperElement.append(
                 $('<div>', {
-                    class: 'listing-col listing-span_1_of_2'
+                    'class': 'listing-col listing-span_1_of_2'
                 }).append(rightTableElement)
             );
             return {
