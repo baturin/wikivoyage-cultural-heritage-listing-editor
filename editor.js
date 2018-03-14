@@ -43,6 +43,23 @@ mw.loader.using(['mediawiki.api'], function() {
             ]
         },
         {
+            id: 'style',
+            possibleValues: [
+                {
+                    value: '',
+                    title: ''
+                },
+                {
+                    value: 'конструктивизм',
+                    title: 'конструктивизм'
+                },
+                {
+                    value: 'модерн',
+                    title: 'модерн'
+                }
+            ]
+        },
+        {
             id: 'status'
         },
         {
@@ -569,6 +586,7 @@ mw.loader.using(['mediawiki.api'], function() {
         serializer.writeParameterLine("block", true);
         serializer.writeParameterLine("address");
         serializer.writeParametersLine(["year", "author"]);
+        serializer.writeParameterLine("style", true);
         serializer.writeParameterLine("description");
         serializer.writeParameterLine("image");
         serializer.writeParameterLine("wdid");
@@ -1152,6 +1170,9 @@ mw.loader.using(['mediawiki.api'], function() {
             var inputAuthor = ListingEditorFormComposer.createInputFormRowText(
                 'input-author', 'Автор объекта', 'архитектор, скульптор, инженер и т.д.'
             );
+            var inputStyle = ListingEditorFormComposer.createInputFormRowSelect(
+                'input-style', 'Стиль', monumentListingParameters.getParameter('style').possibleValues
+            );
             var inputKnid = ListingEditorFormComposer.createInputFormRowText(
                 'input-knid', '10-ти значный № объекта', 'dddddddddd', true
             );
@@ -1203,6 +1224,7 @@ mw.loader.using(['mediawiki.api'], function() {
             tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
             tableObjectProperties.leftTableElement.append(inputYear.rowElement);
             tableObjectProperties.leftTableElement.append(inputAuthor.rowElement);
+            tableObjectProperties.leftTableElement.append(inputStyle.rowElement);
 
             var selectImageLinkRow = ListingEditorFormComposer.createRowLink('выбрать изображение из галереи');
             selectImageLinkRow.linkElement.click(function() {
@@ -1284,6 +1306,9 @@ mw.loader.using(['mediawiki.api'], function() {
                             directMappingInputs[key].val(listing[key]);
                         }
                     });
+                    if (listing['style']) {
+                        inputStyle.inputElement.val(listing['style'].toLowerCase());
+                    }
                     inputDestroyed.inputElement.attr('checked', listing['status'] === 'destroyed');
                     inputPrecise.inputElement.attr('checked', listing['precise'] === 'yes');
                 },
@@ -1305,6 +1330,7 @@ mw.loader.using(['mediawiki.api'], function() {
                     }
                     listingData['link'] = this._normalizeUrl(listingData['link']);
                     listingData['linkextra'] = this._normalizeUrl(listingData['linkextra']);
+                    listingData['style'] = inputStyle.inputElement.val();
                     return listingData;
                 },
 
