@@ -480,6 +480,10 @@ mw.loader.using(['mediawiki.api'], function() {
         return array.indexOf(element) >= 0;
     }
 
+    function inArray(element, array) {
+        return arrayHasElement(array, element);
+    }
+
     function createListingSerializer(listingType, listingParameters, listingData) {
         return {
             _data: '',
@@ -1405,55 +1409,46 @@ mw.loader.using(['mediawiki.api'], function() {
          * the "edit" link in the section heading.
          */
         var addButtons = function() {
-            var tableOfContentsCount = 0;
-            var firstListingTableWithinSection = null;
-
             var pageBodyContentElement = $('#bodyContent');
 
-            // Iterate over section headers
-            pageBodyContentElement.find('h2').each(function(headerElementIndex) {
-                var headerElement = $(this);
+            var currentSectionIndex = 0;
+            var currentListingIndex = 0;
 
-                var isTableOfContents = headerElement.parents('.toc').length > 0;
-                if (isTableOfContents) {
-                    tableOfContentsCount += 1;
-                    return;
-                }
+            function isTableOfContentsHeader(headerElement) {
+                return headerElement.parents('.toc').length > 0;
+            }
 
-                var sectionIndex = headerElementIndex - tableOfContentsCount + 1;
-                var sectionEditLink = $('<a href="javascript:">добавить</a>');
-                var bracketStart = $('<span class="mw-editsection-bracket">[</span>');
-                var bracketEnd = $('<span class="mw-editsection-bracket">]</span>');
-                headerElement.append(
-                    $('<span class="mw-editsection"/>').append(bracketStart).append(sectionEditLink).append(bracketEnd)
-                );
-                sectionEditLink.click(function() {
-                    initListingEditorDialog(MODE_ADD, sectionIndex);
-                });
+            // Here we add buttons to:
+            // - add new listing - for each section header
+            // - edit existing listing - for each existing listing
+            //
+            // It is required to know:
+            // - section index, to which we are going to add new listing
+            // - section index and listing index (within a section) for listing which we are going to edit
+            // To calculate section index and listing index, we iterate over all section header and listing
+            // table elements sequentially (in the same order as we have them in HTML).
+            // When we meet header - we consider that new section is started and increase current section index,
+            // and reset current listing index (listings are enumerated within section). All listings belong
+            // to that section until we meet the next header.
+            // When we meet listing table - we increase current listing index.
+            pageBodyContentElement.find('h1, h2, h3, h4, h5, h6, table.monument').each(function() {
+                if (inArray(this.tagName, ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'])) {
+                    var headerElement = $(this);
 
-                // Iterate over listings inside sections
-                headerElement.nextUntil("h1, h2", "table.monument").each(function(listingIndex) {
-                    var listingTable = $(this);
-                    if (firstListingTableWithinSection === null) {
-                        firstListingTableWithinSection = listingTable;
+                    if (!isTableOfContentsHeader(headerElement)) {
+                        currentSectionIndex++;
+                        currentListingIndex = 0;
+                        addAddNewListingButton(headerElement, currentSectionIndex);
                     }
-                    addEditButton(listingTable, sectionIndex, listingIndex);
-                });
-            });
-
-            // Iterate over listings that are before any section
-            pageBodyContentElement.find('table.monument').each(function(listingIndex) {
-                var listingTable = $(this);
-
-                if (listingTable.is(firstListingTableWithinSection)) {
-                    return false;
+                } else if (this.tagName === 'TABLE') {
+                    var listingTable = $(this);
+                    addEditExistingListingButton(listingTable, currentSectionIndex, currentListingIndex);
+                    currentListingIndex++;
                 }
-
-                addEditButton(listingTable, 0, listingIndex);
             });
         };
 
-        function addEditButton(listingTable, sectionIndex, listingIndex)
+        function addEditExistingListingButton(listingTable, sectionIndex, listingIndex)
         {
             var editListingButton = $('<span class="vcard-edit-button noprint" style="padding-left: 5px;">')
                 .html('<a href="javascript:" class="icon-pencil" title="Редактировать">Редактировать</a>' )
@@ -1464,6 +1459,19 @@ mw.loader.using(['mediawiki.api'], function() {
             if (nameElement) {
                 nameElement.append(editListingButton);
             }
+        }
+
+        function addAddNewListingButton(headerElement, sectionIndex)
+        {
+            var sectionEditLink = $('<a href="javascript:">добавить</a>');
+            var bracketStart = $('<span class="mw-editsection-bracket">[</span>');
+            var bracketEnd = $('<span class="mw-editsection-bracket">]</span>');
+            headerElement.append(
+                $('<span class="mw-editsection"/>').append(bracketStart).append(sectionEditLink).append(bracketEnd)
+            );
+            sectionEditLink.click(function() {
+                initListingEditorDialog(MODE_ADD, sectionIndex);
+            });
         }
 
         /**
