@@ -1174,13 +1174,13 @@ mw.loader.using(['mediawiki.api'], function() {
                 'input-style', 'Стиль', monumentListingParameters.getParameter('style').possibleValues
             );
             var inputKnid = ListingEditorFormComposer.createInputFormRowText(
-                'input-knid', '10-ти значный № объекта', 'dddddddddd', true
+                'input-knid', '10-значный № объекта', 'dddddddddd', true
             );
             var inputComplex = ListingEditorFormComposer.createInputFormRowText(
-                'input-complex', '10-ти значный № комплекса', 'dddddddddd', true
+                'input-complex', '10-значный № комплекса', 'dddddddddd', true
             );
             var inputKnidNew = ListingEditorFormComposer.createInputFormRowText(
-                'input-knid-new', '15-ти значный № объекта', 'ddddddddddddddd', true
+                'input-knid-new', '15-значный № объекта', 'ddddddddddddddd', true
             );
             var inputImage = ListingEditorFormComposer.createInputFormRowText(
                 'input-image', 'Изображение', 'изображение на Викискладе'
