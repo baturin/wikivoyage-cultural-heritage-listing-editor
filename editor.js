@@ -11,6 +11,12 @@ mw.loader.using(['mediawiki.api'], function() {
 
     var CulturalHeritageListingEditor = {};
 
+    var StringUtils = {
+        contains: function(string, substring) {
+            return string.indexOf(substring) >= 0;
+        }
+    };
+
     var monumentListingParameterDescriptors = [
         {
             id: 'name'
@@ -1367,7 +1373,7 @@ mw.loader.using(['mediawiki.api'], function() {
          * Examples where the listing editor should not be enabled include talk
          * pages, edit pages, history pages, etc.
          */
-        var listingEditorAllowedForCurrentPage = function() {
+        function listingEditorAllowedForCurrentPage() {
             var namespace = mw.config.get( 'wgNamespaceNumber' );
             if (namespace !== 0 && namespace !== 2 && namespace !== 4) {
                 return false;
@@ -1382,27 +1388,34 @@ mw.loader.using(['mediawiki.api'], function() {
             }
 
             return isCulturalHeritagePage() && !isDiffMode();
-        };
+        }
+
+        function getCurrentPageName()
+        {
+            return mw.config.get('wgPageName');
+        }
 
         /**
          * Whether we are viewing page in "diff" mode.
          *
          * @returns {boolean}
          */
-        var isDiffMode = function()
+        function isDiffMode()
         {
             return $('table.diff').length > 0;
-        };
+        }
 
         /**
-         * Whether current page is related to Russian Cultural Heritage.
+         * Whether current page is related to Cultural Heritage.
          *
          * @returns {boolean}
          */
-        var isCulturalHeritagePage = function()
+        function isCulturalHeritagePage()
         {
-            return mw.config.get('wgPageName').indexOf('Культурное_наследие_России') >= 0;
-        };
+            // We do not use "Культурное_наследие_России/" here as Crimea is outside of that space
+            // and is located at "Культурное_наследие/" space.
+            return StringUtils.contains(getCurrentPageName(), 'Культурное_наследие');
+        }
 
         /**
          * Place an "add listing" link at the top of each section heading next to
