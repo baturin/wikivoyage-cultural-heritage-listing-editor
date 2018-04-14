@@ -509,15 +509,15 @@ mw.loader.using(['mediawiki.api'], function() {
 
     function createListingSerializer(listingType, listingParameters, listingData) {
         return {
-            _data: '',
+            _serializedListing: '',
             _serializedParameters: [],
 
             writeListingStart: function(addNewline) {
-                this._data += '{{' + listingType;
+                this._serializedListing += '{{' + listingType;
                 if (addNewline) {
-                    this._data += "\n";
+                    this._serializedListing += "\n";
                 } else {
-                    this._data += ' ';
+                    this._serializedListing += ' ';
                 }
             },
 
@@ -529,7 +529,7 @@ mw.loader.using(['mediawiki.api'], function() {
                 if (parameterValue === undefined) {
                     parameterValue = '';
                 }
-                this._data += '|' + parameterName + "=" + parameterValue + "\n";
+                this._serializedListing += '|' + parameterName + "=" + parameterValue + "\n";
                 this._serializedParameters.push(parameterName);
             },
 
@@ -541,12 +541,12 @@ mw.loader.using(['mediawiki.api'], function() {
                         parameterValue = '';
                     }
                     if (i > 0) {
-                        this._data += " ";
+                        this._serializedListing += " ";
                     }
-                    this._data += "|" + parameterName + "=" + parameterValue;
+                    this._serializedListing += "|" + parameterName + "=" + parameterValue;
                     this._serializedParameters.push(parameterName);
                 }
-                this._data += "\n";
+                this._serializedListing += "\n";
             },
 
             writeOtherNonEmptyParameters: function() {
@@ -555,7 +555,7 @@ mw.loader.using(['mediawiki.api'], function() {
                         if (!arrayHasElement(this._serializedParameters, parameterName)) {
                             var parameterValue = listingData[parameterName];
                             if (parameterValue !== '' && parameterValue !== undefined) {
-                                this._data += '|' + parameterName + "=" + parameterValue + "\n"
+                                this._serializedListing += '|' + parameterName + "=" + parameterValue + "\n"
                             }
                         }
                     }
@@ -563,11 +563,11 @@ mw.loader.using(['mediawiki.api'], function() {
             },
 
             writeListingEnd: function() {
-                this._data += '}}';
+                this._serializedListing += '}}';
             },
 
             getSerializedListing: function() {
-                return this._data;
+                return this._serializedListing;
             }
         };
     }
