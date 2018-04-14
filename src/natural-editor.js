@@ -12,6 +12,7 @@ import naturalMonumentTypes from './lib/natural-editor/monument-types';
 import MediaWikiPageWikitext from './lib/mediawiki-page-wikitext';
 import WikitextSectionEditor from './lib/wikitext-section-editor';
 import NaturalEditorListingSerializer from './lib/natural-editor/listing-serializer';
+import SavingForm from './lib/saving-form';
 
 function isNaturalHeritagePage() {
     return StringUtils.contains(MediaWikiPage.getPageName(), 'Природные_памятники_России');
@@ -269,6 +270,7 @@ function naturalHeritageEditorMain() {
                             let updatedWikitext = sectionEditor.getSectionTextWithReplacedListing(
                                 listingTable.getListingIndex(), newListingText
                             );
+                            let savingForm = new SavingForm();
                             MediaWikiPageWikitext.saveSectionWikitext(
                                 listingTable.getSectionIndex(),
                                 updatedWikitext,
@@ -276,9 +278,17 @@ function naturalHeritageEditorMain() {
                                 /*changesIsMinor=*/"",
                                 /*captchaId=*/null,
                                 /*captchaAnswer=*/null,
-                                /*onSuccess=*/ () => alert('success'),
-                                /*onFailure*/ () => alert('failure'),
-                                /*onCaptcha*/ () => alert('captcha')
+                                /*onSuccess=*/ () => {
+                                    window.location.reload()
+                                },
+                                /*onFailure*/ () => {
+                                    savingForm.destroy();
+                                    alert('failure')
+                                },
+                                /*onCaptcha*/ () => {
+                                    savingForm.destroy();
+                                    alert('captcha')
+                                }
                             );
                         },
                         /*onCancel=*/() => alert(2),
