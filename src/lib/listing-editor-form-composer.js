@@ -1,4 +1,6 @@
 
+let InputInsertSymbols = require('./input-insert-symbols');
+
 let ListingEditorFormComposer = {
     createInputFormRow: function(inputElementId, labelText)
     {
@@ -63,25 +65,27 @@ let ListingEditorFormComposer = {
             'id': inputElementId
         });
         row.inputColumnElement.append(inputElement);
-        // if (insertSymbols) {
-        //     let buttonInsertQuotes = $('<a>', {
-        //         'class': 'name-quotes-template',
-        //         href: 'javascript:;',
-        //         html: '«»'
-        //     });
-        //     var buttonInsertDash = $('<a>', {
-        //         'class': 'name-dash-template',
-        //         href: 'javascript:;',
-        //         html: '—'
-        //     });
-        //     InputInsertSymbols.addDashInsertHandler(buttonInsertDash, inputElement);
-        //     InputInsertSymbols.addQuotesInsertHandler(buttonInsertQuotes, inputElement);
-        //
-        //     row.inputColumnElement.append('&nbsp;');
-        //     row.inputColumnElement.append(buttonInsertQuotes);
-        //     row.inputColumnElement.append('&nbsp;');
-        //     row.inputColumnElement.append(buttonInsertDash);
-        // }
+
+        if (insertSymbols) {
+            let buttonInsertQuotes = $('<a>', {
+                'class': 'name-quotes-template',
+                href: 'javascript:;',
+                html: '«»'
+            });
+            let buttonInsertDash = $('<a>', {
+                'class': 'name-dash-template',
+                href: 'javascript:;',
+                html: '—'
+            });
+            InputInsertSymbols.addDashInsertHandler(buttonInsertDash, inputElement);
+            InputInsertSymbols.addQuotesInsertHandler(buttonInsertQuotes, inputElement);
+
+            row.inputColumnElement.append('&nbsp;');
+            row.inputColumnElement.append(buttonInsertQuotes);
+            row.inputColumnElement.append('&nbsp;');
+            row.inputColumnElement.append(buttonInsertDash);
+        }
+
         return {
             'rowElement': row.rowElement,
             'inputElement': inputElement
