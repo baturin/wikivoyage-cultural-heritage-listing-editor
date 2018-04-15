@@ -209,6 +209,18 @@ class NaturalHeritageEditorForm {
         });
         return data;
     }
+
+    getObjectName() {
+        return this._inputObjectName.inputElement.val();
+    }
+
+    getChangesSummary() {
+        return this._inputChangesSummary.val();
+    }
+
+    getChangesIsMinor() {
+        return this._inputIsMinorChanges.is(':checked');
+    }
 }
 
 module.export = NaturalHeritageEditorForm;

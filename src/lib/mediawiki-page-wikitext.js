@@ -63,6 +63,12 @@ let MediaWikiPageWikitext = {
                 onFailure(commonMessages.submitUnknownError + ': ' + code );
             }
         });
+    },
+
+    getSectionName(sectionWikitext) {
+        let HEADING_REGEX = /^=+\s*([^=]+)\s*=+\s*\n/;
+        let result = HEADING_REGEX.exec(sectionWikitext);
+        return (result !== null) ? result[1].trim() : "";
     }
 };
 

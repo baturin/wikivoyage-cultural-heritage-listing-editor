@@ -6,6 +6,7 @@ import SavingForm from "./saving-form";
 import ListingEditorUtils from "./listing-editor-utils";
 import MediaWikiPage from "./mediawiki-page";
 import StringUtils from "./string-utils";
+import commonMessages from "./messages";
 
 function initListingEditor(
     {
@@ -40,12 +41,15 @@ function initListingEditor(
                 let updatedWikitext = sectionEditor.getSectionTextWithAddedListing(
                     newListingText
                 );
+                let changesSummary = composeChangesSummary(
+                    sectionWikitext, form, commonMessages.changesSummaryAdded
+                );
                 let savingForm = new SavingForm();
                 MediaWikiPageWikitext.saveSectionWikitext(
                     sectionIndex,
                     updatedWikitext,
-                    /*changesSummary=*/"",
-                    /*changesIsMinor=*/"",
+                    changesSummary,
+                    form.getChangesIsMinor(),
                     /*captchaId=*/null,
                     /*captchaAnswer=*/null,
                     /*onSuccess=*/ () => {
@@ -81,12 +85,15 @@ function initListingEditor(
                 let updatedWikitext = sectionEditor.getSectionTextWithReplacedListing(
                     listingIndex, newListingText
                 );
+                let changesSummary = composeChangesSummary(
+                    sectionWikitext, form, commonMessages.changesSummaryUpdated
+                );
                 let savingForm = new SavingForm();
                 MediaWikiPageWikitext.saveSectionWikitext(
                     sectionIndex,
                     updatedWikitext,
-                    /*changesSummary=*/"",
-                    /*changesIsMinor=*/"",
+                    changesSummary,
+                    form.getChangesIsMinor(),
                     /*captchaId=*/null,
                     /*captchaAnswer=*/null,
                     /*onSuccess=*/ () => {
@@ -109,6 +116,16 @@ function initListingEditor(
         );
     }
 
+    function composeChangesSummary(sectionWikitext, form, changesType) {
+        let changesSummary = getChangesSummarySection(sectionWikitext);
+        changesSummary += changesType + " " + form.getObjectName();
+        let userChangesSummary = StringUtils.trim(form.getChangesSummary());
+        if (userChangesSummary.length > 0) {
+            changesSummary += " - " + userChangesSummary;
+        }
+        return changesSummary;
+    }
+
     function onAddNewListing(sectionIndex) {
         MediaWikiPageWikitext.loadSectionWikitext(
             sectionIndex,
@@ -121,6 +138,11 @@ function initListingEditor(
             sectionIndex,
             (wikitext) => showListingEditorDialogEdit(sectionIndex, listingIndex, wikitext)
         );
+    }
+
+    function getChangesSummarySection(sectionWikitext) {
+        let sectionName = MediaWikiPageWikitext.getSectionName(sectionWikitext);
+        return (sectionName.length) ? '/* ' + sectionName + ' */ ' : "";
     }
 
     let listingPageElements = ListingEditorUtils.getListingPageElements();
