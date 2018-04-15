@@ -3,6 +3,7 @@ import regions from "../regions";
 import ListingEditorFormComposer from "../listing-editor-form-composer";
 import naturalMonumentTypes from "./monument-types";
 import naturalMonumentCategories from "./monument-categories";
+import CommonsImagesSelectDialog from '../commons-images-select-dialog';
 
 class NaturalHeritageEditorForm {
     constructor() {
@@ -106,6 +107,18 @@ class NaturalHeritageEditorForm {
             'input-document', 'Документ', '', true
         );
 
+        let selectImageLinkRow = ListingEditorFormComposer.createRowLink('выбрать изображение из галереи');
+        selectImageLinkRow.linkElement.click(() => {
+            CommonsImagesSelectDialog.showDialog(
+                /*knidWLM=*/null,
+                this._inputKnid.inputElement.val(),
+                this._inputCommonscat.inputElement.val(),
+                (selectedImage) => {
+                    this._inputImage.inputElement.val(selectedImage);
+                }
+            )
+        });
+
         let tableObjectName = ListingEditorFormComposer.createTableFullWidth();
         tableObjectName.tableElement.append(this._inputObjectName.rowElement);
         tableObjectName.tableElement.append(ListingEditorFormComposer.createRowDivider());
@@ -136,6 +149,7 @@ class NaturalHeritageEditorForm {
         tableObjectProperties.rightTableElement.append(this._inputUid.rowElement);
         tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
         tableObjectProperties.rightTableElement.append(this._inputImage.rowElement);
+        tableObjectProperties.rightTableElement.append(selectImageLinkRow.rowElement);
         tableObjectProperties.rightTableElement.append(this._inputWiki.rowElement);
         tableObjectProperties.rightTableElement.append(this._inputCommonscat.rowElement);
         tableObjectProperties.rightTableElement.append(this._inputMunid.rowElement);
