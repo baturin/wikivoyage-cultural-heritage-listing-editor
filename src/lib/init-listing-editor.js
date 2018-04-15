@@ -54,9 +54,9 @@ function initListingEditor(
                 /*onSuccess=*/ () => {
                     window.location.reload()
                 },
-                /*onFailure*/ () => {
+                /*onFailure*/ (message) => {
                     savingForm.destroy();
-                    alert('failure')
+                    alert(message);
                 },
                 /*onCaptcha*/ (captchaImgSrc, captchaId) => {
                     savingForm.destroy();
