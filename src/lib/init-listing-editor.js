@@ -62,7 +62,7 @@ function initListingEditor(
                 );
             },
             /*onCancel=*/() => {
-                alert(2);
+                form.getForm().formElement.dialog('destroy').remove();
             },
             /*onHelp=*/showHelp
         );
@@ -102,7 +102,9 @@ function initListingEditor(
                     }
                 );
             },
-            /*onCancel=*/() => alert(2),
+            /*onCancel=*/() => {
+                form.getForm().formElement.dialog('destroy').remove();
+            },
             /*onHelp=*/showHelp
         );
     }
