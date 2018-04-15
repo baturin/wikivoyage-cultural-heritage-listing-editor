@@ -3,6 +3,7 @@ import ListingEditorDialog from "./listing-editor-dialog";
 import MediaWikiPageWikitext from "./mediawiki-page-wikitext";
 import WikitextSectionEditor from "./wikitext-section-editor";
 import SavingForm from "./saving-form";
+import CaptchaDialog from "./captcha-dialog";
 import ListingEditorUtils from "./listing-editor-utils";
 import MediaWikiPage from "./mediawiki-page";
 import StringUtils from "./string-utils";
@@ -32,39 +33,46 @@ function initListingEditor(
     function showListingEditorDialogAdd(sectionIndex, sectionWikitext) {
         let sectionEditor = new WikitextSectionEditor(sectionWikitext, listingTemplateName);
         let form = new formClass();
+
+        function onFormSubmit(captchaId, captchaAnswer) {
+            let listingSerializer = new listingSerializerClass();
+            let newListingText = listingSerializer.serializeListingData(form.getData());
+            let updatedWikitext = sectionEditor.getSectionTextWithAddedListing(
+                newListingText
+            );
+            let changesSummary = composeChangesSummary(
+                sectionWikitext, form, commonMessages.changesSummaryAdded
+            );
+            let savingForm = new SavingForm();
+            MediaWikiPageWikitext.saveSectionWikitext(
+                sectionIndex,
+                updatedWikitext,
+                changesSummary,
+                form.getChangesIsMinor(),
+                captchaId,
+                captchaAnswer,
+                /*onSuccess=*/ () => {
+                    window.location.reload()
+                },
+                /*onFailure*/ () => {
+                    savingForm.destroy();
+                    alert('failure')
+                },
+                /*onCaptcha*/ (captchaImgSrc, captchaId) => {
+                    savingForm.destroy();
+                    new CaptchaDialog(
+                        captchaImgSrc, (captchaAnswer) => {
+                            onFormSubmit(captchaId, captchaAnswer)
+                        }
+                    );
+                }
+            );
+        }
+
         ListingEditorDialog.showDialog(
             form.getForm().formElement,
             "Add",
-            /*onSubmit=*/() => {
-                let listingSerializer = new listingSerializerClass();
-                let newListingText = listingSerializer.serializeListingData(form.getData());
-                let updatedWikitext = sectionEditor.getSectionTextWithAddedListing(
-                    newListingText
-                );
-                let changesSummary = composeChangesSummary(
-                    sectionWikitext, form, commonMessages.changesSummaryAdded
-                );
-                let savingForm = new SavingForm();
-                MediaWikiPageWikitext.saveSectionWikitext(
-                    sectionIndex,
-                    updatedWikitext,
-                    changesSummary,
-                    form.getChangesIsMinor(),
-                    /*captchaId=*/null,
-                    /*captchaAnswer=*/null,
-                    /*onSuccess=*/ () => {
-                        window.location.reload()
-                    },
-                    /*onFailure*/ () => {
-                        savingForm.destroy();
-                        alert('failure')
-                    },
-                    /*onCaptcha*/ () => {
-                        savingForm.destroy();
-                        alert('captcha')
-                    }
-                );
-            },
+            /*onSubmit=*/onFormSubmit,
             /*onCancel=*/() => {
                 form.getForm().formElement.dialog('destroy').remove();
             },
@@ -77,38 +85,45 @@ function initListingEditor(
         let listingData = sectionEditor.getListingData(listingIndex);
         let form = new formClass();
         form.setData(listingData);
+
+        function onFormSubmit(captchaId, captchaAnswer) {
+            let listingSerializer = new listingSerializerClass();
+            let newListingText = listingSerializer.serializeListingData(form.getData());
+            let updatedWikitext = sectionEditor.getSectionTextWithReplacedListing(
+                listingIndex, newListingText
+            );
+            let changesSummary = composeChangesSummary(
+                sectionWikitext, form, commonMessages.changesSummaryUpdated
+            );
+            let savingForm = new SavingForm();
+            MediaWikiPageWikitext.saveSectionWikitext(
+                sectionIndex,
+                updatedWikitext,
+                changesSummary,
+                form.getChangesIsMinor(),
+                captchaId,
+                captchaAnswer,
+                /*onSuccess=*/ () => {
+                    window.location.reload()
+                },
+                /*onFailure*/ (message) => {
+                    savingForm.destroy();
+                    alert(message);
+                },
+                /*onCaptcha*/ (captchaImgSrc, captchaId) => {
+                    savingForm.destroy();
+                    new CaptchaDialog(
+                        captchaImgSrc, (captchaAnswer) => {
+                            onFormSubmit(captchaId, captchaAnswer)
+                        }
+                    );
+                }
+            );
+        }
+
         ListingEditorDialog.showDialog(
             form.getForm().formElement, "Edit",
-            /*onSubmit=*/() => {
-                let listingSerializer = new listingSerializerClass();
-                let newListingText = listingSerializer.serializeListingData(form.getData());
-                let updatedWikitext = sectionEditor.getSectionTextWithReplacedListing(
-                    listingIndex, newListingText
-                );
-                let changesSummary = composeChangesSummary(
-                    sectionWikitext, form, commonMessages.changesSummaryUpdated
-                );
-                let savingForm = new SavingForm();
-                MediaWikiPageWikitext.saveSectionWikitext(
-                    sectionIndex,
-                    updatedWikitext,
-                    changesSummary,
-                    form.getChangesIsMinor(),
-                    /*captchaId=*/null,
-                    /*captchaAnswer=*/null,
-                    /*onSuccess=*/ () => {
-                        window.location.reload()
-                    },
-                    /*onFailure*/ () => {
-                        savingForm.destroy();
-                        alert('failure')
-                    },
-                    /*onCaptcha*/ () => {
-                        savingForm.destroy();
-                        alert('captcha')
-                    }
-                );
-            },
+            /*onSubmit=*/onFormSubmit,
             /*onCancel=*/() => {
                 form.getForm().formElement.dialog('destroy').remove();
             },

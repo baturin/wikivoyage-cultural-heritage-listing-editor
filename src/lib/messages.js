@@ -5,8 +5,11 @@ let commonMessages = {
     submitUnknownError: 'Ошибка: при попытке сохранить листинг произошла неизвестная ошибка, пожайлуста, попробуйте сохранить ещё раз',
     submitHttpError: 'Ошибка: сервер сообщил о HTTP ошибке, возникшей во время сохранения листинга, пожайлуста, попробуйте сохранить ещё раз',
     submitEmptyError: 'Ошибка: сервер вернул пустой ответ при попытке сохранить листинг, пожайлуста, попробуйте сохранить ещё раз',
+    enterCaptcha: 'Введите CAPTCHA',
     changesSummaryAdded: 'Добавлен объект',
-    changesSummaryUpdated: 'Обновлён объект'
+    changesSummaryUpdated: 'Обновлён объект',
+    captchaSubmit: 'Продолжить',
+    captchaCancel: 'Отмена',
 };
 
 module.exports = commonMessages;
