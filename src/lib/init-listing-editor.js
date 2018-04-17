@@ -71,7 +71,7 @@ function initListingEditor(
 
         ListingEditorDialog.showDialog(
             form.getForm().formElement,
-            "Add",
+            commonMessages.addTitle,
             /*onSubmit=*/onFormSubmit,
             /*onCancel=*/() => {
                 form.getForm().formElement.dialog('destroy').remove();
@@ -122,7 +122,7 @@ function initListingEditor(
         }
 
         ListingEditorDialog.showDialog(
-            form.getForm().formElement, "Edit",
+            form.getForm().formElement, commonMessages.editTitle,
             /*onSubmit=*/onFormSubmit,
             /*onCancel=*/() => {
                 form.getForm().formElement.dialog('destroy').remove();

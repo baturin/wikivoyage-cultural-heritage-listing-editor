@@ -24,9 +24,10 @@ class NaturalEditorListingSerializer {
         listingSerializer.writeParameterLine("wdid");
         listingSerializer.writeParameterLine("wiki");
         listingSerializer.writeParameterLine("commonscat");
-        listingSerializer.writeParameterLine("link");
+        listingSerializer.writeParameterLine("link", true);
         listingSerializer.writeParameterLine("linkextra", true);
         listingSerializer.writeParameterLine("document", true);
+        listingSerializer.writeParameterLine("oopt", true);
         listingSerializer.writeOtherNonEmptyParameters();
         listingSerializer.writeListingEnd();
         return listingSerializer.getSerializedListing();

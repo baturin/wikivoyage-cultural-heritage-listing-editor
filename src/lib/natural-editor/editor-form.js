@@ -4,6 +4,7 @@ import ListingEditorFormComposer from "../listing-editor-form-composer";
 import naturalMonumentTypes from "./monument-types";
 import naturalMonumentCategories from "./monument-categories";
 import CommonsImagesSelectDialog from '../commons-images-select-dialog';
+import ValidationUtils from '../validation-utils';
 
 class NaturalHeritageEditorForm {
     constructor() {
@@ -87,6 +88,9 @@ class NaturalHeritageEditorForm {
         this._inputWiki = ListingEditorFormComposer.createInputFormRowText(
             'input-wiki', 'Википедия', 'статья в русской Википедии'
         );
+        this._inputWdid = ListingEditorFormComposer.createInputFormRowText(
+            'input-wdid', 'Викиданные', 'идентификатор Викиданных', true
+        );
         this._inputCommonscat = ListingEditorFormComposer.createInputFormRowText(
             'input-commonscat', 'Викисклад', 'категория Викисклада'
         );
@@ -151,6 +155,7 @@ class NaturalHeritageEditorForm {
         tableObjectProperties.rightTableElement.append(this._inputImage.rowElement);
         tableObjectProperties.rightTableElement.append(selectImageLinkRow.rowElement);
         tableObjectProperties.rightTableElement.append(this._inputWiki.rowElement);
+        tableObjectProperties.rightTableElement.append(this._inputWdid.rowElement);
         tableObjectProperties.rightTableElement.append(this._inputCommonscat.rowElement);
         tableObjectProperties.rightTableElement.append(this._inputMunid.rowElement);
         tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
@@ -188,6 +193,7 @@ class NaturalHeritageEditorForm {
             address: this._inputAddress.inputElement,
             lat: this._inputLat.inputElement,
             long: this._inputLong.inputElement,
+            description: this._inputDescription,
             year: this._inputYear.inputElement,
             author: this._inputAuthor.inputElement,
             area: this._inputArea.inputElement,
@@ -196,11 +202,13 @@ class NaturalHeritageEditorForm {
             uid: this._inputUid.inputElement,
             image: this._inputImage.inputElement,
             wiki: this._inputWiki.inputElement,
+            wdid: this._inputWdid.inputElement,
             commonscat: this._inputCommonscat.inputElement,
             munid: this._inputMunid.inputElement,
             link: this._inputLink.inputElement,
             linkextra: this._inputLinkExtra.inputElement,
-            document: this._inputDocument.inputElement
+            document: this._inputDocument.inputElement,
+            oopt: this._inputOopt.inputElement
         };
     }
 
@@ -214,6 +222,7 @@ class NaturalHeritageEditorForm {
                 this._directMappingInputs[key].val(listingData[key]);
             }
         });
+        this._inputPrecise.inputElement.attr('checked', listingData['precise'] === 'yes');
     }
 
     getData() {
@@ -221,6 +230,13 @@ class NaturalHeritageEditorForm {
         Object.keys(this._directMappingInputs).forEach((key) => {
             data[key] = this._directMappingInputs[key].val();
         });
+        if (this._inputPrecise.inputElement.is(':checked')) {
+            data['precise'] = 'yes';
+        } else {
+            data['precise'] = 'no';
+        }
+        data['link'] = ValidationUtils.normalizeUrl(data['link']);
+        data['linkextra'] = ValidationUtils.normalizeUrl(data['linkextra']);
         return data;
     }
 
