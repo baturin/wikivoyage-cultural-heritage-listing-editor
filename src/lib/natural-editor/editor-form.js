@@ -253,4 +253,4 @@ class NaturalHeritageEditorForm {
     }
 }
 
-module.export = NaturalHeritageEditorForm;
+module.exports = NaturalHeritageEditorForm;
