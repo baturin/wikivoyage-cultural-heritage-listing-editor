@@ -21,6 +21,7 @@ appendFile() {
 }
 
 NATURAL_EDITOR_RESULTING_FILE=dist/natural-editor.js
+NO_IMAGE_WARNING_FILE=dist/no-image-warning.js
 
 writeHeader "$NATURAL_EDITOR_RESULTING_FILE"
 appendFile lib/messages.js "$NATURAL_EDITOR_RESULTING_FILE"
@@ -53,3 +54,14 @@ appendFile lib/commons-images-select-dialog.js "$NATURAL_EDITOR_RESULTING_FILE"
 appendFile lib/init-listing-editor.js "$NATURAL_EDITOR_RESULTING_FILE"
 appendFile natural-editor.js "$NATURAL_EDITOR_RESULTING_FILE"
 writeFooter "$NATURAL_EDITOR_RESULTING_FILE"
+
+writeHeader "$NO_IMAGE_WARNING_FILE"
+appendFile lib/async-utils.js "$NO_IMAGE_WARNING_FILE"
+appendFile lib/string-utils.js "$NO_IMAGE_WARNING_FILE"
+appendFile lib/array-utils.js "$NO_IMAGE_WARNING_FILE"
+appendFile lib/mediawiki-page.js "$NO_IMAGE_WARNING_FILE"
+appendFile lib/commons-api.js "$NO_IMAGE_WARNING_FILE"
+appendFile lib/listing-table-html.js "$NO_IMAGE_WARNING_FILE"
+appendFile lib/listing-editor-utils.js "$NO_IMAGE_WARNING_FILE"
+appendFile no-image-warning.js "$NO_IMAGE_WARNING_FILE"
+writeFooter "$NO_IMAGE_WARNING_FILE"

@@ -1,117 +1,66 @@
-//<nowiki>
-mw.loader.using(['mediawiki.api'], function() {
-    'use strict';
+import CommonsApi from './lib/commons-api';
+import ArrayUtils from './lib/array-utils';
+import ListingEditorUtils from "./lib/listing-editor-utils";
+import ListingTableHtml from './lib/listing-table-html';
+import MediaWikiPage from "./lib/mediawiki-page";
+import StringUtils from "./lib/string-utils";
 
-    var CommonsApi = {
-        baseUrl: 'https://commons.wikimedia.org/w/api.php',
+let pageTypes = [
+    {
+        galleryTitle: "WLE",
+        parentCategoryName: "Protected areas of Russia",
+        pageNamespace: "Природные_памятники_России"
+    },
+    {
+        galleryTitle: "WLM",
+        parentCategoryName: "WLM",
+        pageNamespace: "Культурное_наследие"
+    }
+];
 
-        executeRequest: function (parameters, onSuccess) {
-            $.post({
-                url: this.baseUrl,
-                data: parameters,
-                crossDomain: true,
-                dataType: 'jsonp'
-            }).done(function (data) {
-                onSuccess(data);
-            });
-        },
+pageTypes.forEach(function(pageType) {
+    if (
+        !ListingEditorUtils.isEditablePage() ||
+        !StringUtils.contains(MediaWikiPage.getPageName(), pageType.pageNamespace)
+    ) {
+        return;
+    }
 
-        hasCategoriesFiles: function(categories, onSuccess) {
-            var maxChunkSize = 30;
-            for (var catNumStart = 0; catNumStart < categories.length; catNumStart += maxChunkSize) {
-                var categoriesChunk = categories.slice(catNumStart, catNumStart + maxChunkSize);
-                this.executeRequest(
-                    {
-                        action: 'query',
-                        titles: categoriesChunk.join("|"),
-                        prop: 'categoryinfo',
-                        format: 'json'
-                    },
-                    function (data) {
-                        var result = {};
+    let listingPageElements = ListingEditorUtils.getListingPageElements();
+    let listingTables = listingPageElements.getListingTables();
 
-                        if (!data || !data.query || !data.query.pages) {
-                            return;
-                        }
-                        Object.keys(data.query.pages).forEach(function (key) {
-                            var pageInfo = data.query.pages[key];
-                            if (
-                                pageInfo.title &&
-                                pageInfo.categoryinfo &&
-                                pageInfo.categoryinfo.files &&
-                                pageInfo.categoryinfo.files > 0
-                            ) {
-                                result[pageInfo.title] = true;
-                            }
-                        });
+    let listingWithoutImageButWithCommonsCategory = [];
 
-                        onSuccess(result);
-                    }
-                );
-            }
+    listingTables.forEach(function(listingTable) {
+        let listingTableElement = $(listingTable.getTableElement());
+        let listingTableHtml = new ListingTableHtml(listingTableElement);
+
+        if (listingTableHtml.hasListingPhoto(listingTableElement)) {
+            return;
         }
-    };
 
-    $(document).ready(function() {
-        var imagesWithNoPhoto = [];
-
-        $('table.monument').each(function() {
-            var monumentTable = $(this);
-
-            var hasPhoto = true;
-            monumentTable.find('a').each(function() {
-                var aElem = $(this);
-                if (aElem.text() === 'Нет фото' || aElem.attr('title') === 'Нет фото') {
-                    hasPhoto = false;
-                    return false;
-                }
-            });
-
-            if (hasPhoto) {
-                return;
-            }
-
-            var wlmCategory = null;
-
-            monumentTable.find('a.extiw').each(function() {
-                var linkElem = $(this);
-                var href = linkElem.attr('href');
-                if (!href) {
-                    return;
-                }
-
-                if (href.indexOf('https://commons.wikimedia.org/wiki/Category:WLM/') === 0) {
-                    wlmCategory = href.replace(/https:\/\/commons\.wikimedia\.org\/wiki\//, '');
-                    return false;
-                }
-            });
-
-            if (wlmCategory) {
-                var nameElement = monumentTable.find('span.monument-name').first();
-                if (nameElement) {
-                    imagesWithNoPhoto.push({
-                        wlmCategory: wlmCategory,
-                        nameElement: nameElement
-                    });
-                }
-            }
-        });
-
-        var categories = [];
-        imagesWithNoPhoto.forEach(function(elem) {
-            categories.push(elem.wlmCategory);
-        });
-
-        CommonsApi.hasCategoriesFiles(categories, function(result) {
-            imagesWithNoPhoto.forEach(function(imageWithNoPhoto) {
-                var imageCat = imageWithNoPhoto.wlmCategory;
-                if (result[imageCat]) {
-                    $('<span>', {html: '&nbsp;[в галерее WLM есть изображения]', style: 'color: red;'}).insertAfter(
-                        imageWithNoPhoto.nameElement
-                    );
-                }
-            });
+        let commonsCategory = listingTableHtml.findCommonsCategory(pageType.parentCategoryName);
+        if (!commonsCategory) {
+            return;
+        }
+        listingWithoutImageButWithCommonsCategory.push({
+            listingTableHtml: listingTableHtml,
+            category: commonsCategory
         });
     });
+
+    CommonsApi.hasCategoriesFiles(
+        listingWithoutImageButWithCommonsCategory.map((item) => item.category.replace(/_/g, ' ')),
+        (categoriesWithImages) => {
+            listingWithoutImageButWithCommonsCategory.forEach(
+                (listingItem) => {
+                    if (ArrayUtils.hasElement(categoriesWithImages, listingItem.category.replace(/_'/g, ' '))) {
+                        listingItem.listingTableHtml.addWarning(
+                            "в галерее " + pageType.galleryTitle + " есть изображения"
+                        );
+                    }
+                }
+            );
+        }
+    )
 });
-//</nowiki>

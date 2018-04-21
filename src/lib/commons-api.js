@@ -110,6 +110,52 @@ let CommonsApi = {
                 onSuccess(imageInfos);
             }
         );
+    },
+
+    /**
+     *
+     * @param categories list of category titles, e.g. ['Novosibirsk', 'Tomsk', 'Culture_of_Novosibirsk']
+     * @param onSuccess function which accepts single argument - list which has category
+     * titles for each category which has at least one file, e.g.
+     * ['Novosibirsk': 'Culture_of_Novosibirsk']
+     */
+    hasCategoriesFiles: function(categories, onSuccess) {
+        let maxChunkSize = 30;
+        AsyncUtils.runChunks(
+            (categoriesChunk, onSuccess) => {
+                this.executeRequest(
+                    {
+                        action: 'query',
+                        titles: categoriesChunk.join("|"),
+                        prop: 'categoryinfo',
+                        format: 'json'
+                    },
+                    (data) => {
+                        let result = [];
+
+                        if (!data || !data.query || !data.query.pages) {
+                            return;
+                        }
+                        Object.keys(data.query.pages).forEach(function (key) {
+                            let pageInfo = data.query.pages[key];
+                            if (
+                                pageInfo.title &&
+                                pageInfo.categoryinfo &&
+                                pageInfo.categoryinfo.files &&
+                                pageInfo.categoryinfo.files > 0
+                            ) {
+                                result.push(pageInfo.title);
+                            }
+                        });
+
+                        onSuccess(result);
+                    }
+                );
+            },
+            maxChunkSize,
+            categories,
+            onSuccess
+        );
     }
 };
 
