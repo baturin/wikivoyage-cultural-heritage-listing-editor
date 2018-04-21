@@ -45,9 +45,6 @@ class NaturalHeritageEditorForm {
         this._inputMunicipality = ListingEditorFormComposer.createInputFormRowText(
             'input-municipality', 'Населённый пункт'
         );
-        this._inputBlock = ListingEditorFormComposer.createInputFormRowText(
-            'input-block', 'Квартал'
-        );
         this._inputAddress = ListingEditorFormComposer.createInputFormRowText(
             'input-address', 'Адрес', 'улица название, номер дома'
         );
@@ -62,12 +59,6 @@ class NaturalHeritageEditorForm {
             'input-precise', 'Точные координаты'
         );
 
-        this._inputYear = ListingEditorFormComposer.createInputFormRowText(
-            'input-year', 'Год создания', 'yyyy', true
-        );
-        this._inputAuthor = ListingEditorFormComposer.createInputFormRowText(
-            'input-author', 'Автор объекта', 'архитектор, скульптор, инженер и т.д.'
-        );
         this._inputArea = ListingEditorFormComposer.createInputFormRowText(
             'input-area', 'Площадь'
         );
@@ -137,15 +128,12 @@ class NaturalHeritageEditorForm {
         tableObjectProperties.leftTableElement.append(this._inputRegion.rowElement);
         tableObjectProperties.leftTableElement.append(this._inputDistrict.rowElement);
         tableObjectProperties.leftTableElement.append(this._inputMunicipality.rowElement);
-        tableObjectProperties.leftTableElement.append(this._inputBlock.rowElement);
         tableObjectProperties.leftTableElement.append(this._inputAddress.rowElement);
         tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
         tableObjectProperties.leftTableElement.append(this._inputLat.rowElement);
         tableObjectProperties.leftTableElement.append(this._inputLong.rowElement);
         tableObjectProperties.leftTableElement.append(this._inputPrecise.rowElement);
         tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
-        tableObjectProperties.leftTableElement.append(this._inputYear.rowElement);
-        tableObjectProperties.leftTableElement.append(this._inputAuthor.rowElement);
         tableObjectProperties.leftTableElement.append(this._inputArea.rowElement);
 
         tableObjectProperties.rightTableElement.append(this._inputKnid.rowElement);
@@ -189,13 +177,10 @@ class NaturalHeritageEditorForm {
             region: this._inputRegion.inputElement,
             district: this._inputDistrict.inputElement,
             municipality: this._inputMunicipality.inputElement,
-            block: this._inputBlock.inputElement,
             address: this._inputAddress.inputElement,
             lat: this._inputLat.inputElement,
             long: this._inputLong.inputElement,
             description: this._inputDescription,
-            year: this._inputYear.inputElement,
-            author: this._inputAuthor.inputElement,
             area: this._inputArea.inputElement,
             knid: this._inputKnid.inputElement,
             complex: this._inputComplex.inputElement,

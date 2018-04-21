@@ -14,10 +14,7 @@ class NaturalEditorListingSerializer {
         listingSerializer.writeParameterLine("uid", true);
         listingSerializer.writeParametersLine(["region", "district"]);
         listingSerializer.writeParametersLine(["municipality", "munid"]);
-        listingSerializer.writeParameterLine("block", true);
         listingSerializer.writeParameterLine("address");
-        listingSerializer.writeParameterLine("year", true);
-        listingSerializer.writeParameterLine("author", true);
         listingSerializer.writeParameterLine("area", true);
         listingSerializer.writeParameterLine("description");
         listingSerializer.writeParameterLine("image");
