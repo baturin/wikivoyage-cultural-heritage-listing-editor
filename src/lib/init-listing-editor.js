@@ -88,7 +88,9 @@ function initListingEditor(
 
         function onFormSubmit(captchaId, captchaAnswer) {
             let listingSerializer = new listingSerializerClass();
-            let newListingText = listingSerializer.serializeListingData(form.getData());
+            let newListingText = listingSerializer.serializeListingData(
+                ObjectUtils.merge(listingData, form.getData())
+            );
             let updatedWikitext = sectionEditor.getSectionTextWithReplacedListing(
                 listingIndex, newListingText
             );
