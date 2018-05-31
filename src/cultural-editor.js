@@ -509,15 +509,15 @@ mw.loader.using(['mediawiki.api'], function() {
 
     function createListingSerializer(listingType, listingParameters, listingData) {
         return {
-            _serializedListing: '',
+            _data: '',
             _serializedParameters: [],
 
             writeListingStart: function(addNewline) {
-                this._serializedListing += '{{' + listingType;
+                this._data += '{{' + listingType;
                 if (addNewline) {
-                    this._serializedListing += "\n";
+                    this._data += "\n";
                 } else {
-                    this._serializedListing += ' ';
+                    this._data += ' ';
                 }
             },
 
@@ -529,7 +529,7 @@ mw.loader.using(['mediawiki.api'], function() {
                 if (parameterValue === undefined) {
                     parameterValue = '';
                 }
-                this._serializedListing += '|' + parameterName + "=" + parameterValue + "\n";
+                this._data += '|' + parameterName + "=" + parameterValue + "\n";
                 this._serializedParameters.push(parameterName);
             },
 
@@ -541,12 +541,12 @@ mw.loader.using(['mediawiki.api'], function() {
                         parameterValue = '';
                     }
                     if (i > 0) {
-                        this._serializedListing += " ";
+                        this._data += " ";
                     }
-                    this._serializedListing += "|" + parameterName + "=" + parameterValue;
+                    this._data += "|" + parameterName + "=" + parameterValue;
                     this._serializedParameters.push(parameterName);
                 }
-                this._serializedListing += "\n";
+                this._data += "\n";
             },
 
             writeOtherNonEmptyParameters: function() {
@@ -555,7 +555,7 @@ mw.loader.using(['mediawiki.api'], function() {
                         if (!arrayHasElement(this._serializedParameters, parameterName)) {
                             var parameterValue = listingData[parameterName];
                             if (parameterValue !== '' && parameterValue !== undefined) {
-                                this._serializedListing += '|' + parameterName + "=" + parameterValue + "\n"
+                                this._data += '|' + parameterName + "=" + parameterValue + "\n"
                             }
                         }
                     }
@@ -563,11 +563,11 @@ mw.loader.using(['mediawiki.api'], function() {
             },
 
             writeListingEnd: function() {
-                this._serializedListing += '}}';
+                this._data += '}}';
             },
 
             getSerializedListing: function() {
-                return this._serializedListing;
+                return this._data;
             }
         };
     }
@@ -596,7 +596,6 @@ mw.loader.using(['mediawiki.api'], function() {
         serializer.writeParameterLine("linkextra", true);
         serializer.writeParameterLine("document", true);
         serializer.writeParameterLine("doc", true);
-        serializer.writeParameterLine("style", true);
         serializer.writeParameterLine("protection", true);
         serializer.writeParameterLine("dismissed", true);
         serializer.writeOtherNonEmptyParameters();
@@ -1989,14 +1988,14 @@ mw.loader.using(['mediawiki.api'], function() {
                 buttons: [
                     {
                         text: TRANSLATIONS.submit, click: function() {
-                        saveForm(summary, minor, sectionNumber, captchaId, $('#input-captcha').val());
-                        $(this).dialog('destroy').remove();
-                    }
+                            saveForm(summary, minor, sectionNumber, captchaId, $('#input-captcha').val());
+                            $(this).dialog('destroy').remove();
+                        }
                     },
                     {
                         text: TRANSLATIONS.cancel, click: function() {
-                        $(this).dialog('destroy').remove();
-                    }
+                            $(this).dialog('destroy').remove();
+                        }
                     }
                 ]
             });
