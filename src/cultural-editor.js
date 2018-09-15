@@ -1369,7 +1369,7 @@ mw.loader.using(['mediawiki.api'], function() {
             helpPage: '//ru.wikivoyage.org/wiki/%D0%9A%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D0%BD%D0%BE%D0%B5_%D0%BD%D0%B0%D1%81%D0%BB%D0%B5%D0%B4%D0%B8%D0%B5_%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D0%B8',
             enterCaptcha: 'Введите CAPTCHA',
             externalLinks: 'Введённый текст содержит внешние ссылки.',
-            licenseText: 'Нажимая кнопку «Сохранить», вы соглашаетесь с <a class="external" target="_blank" href="https://wikimediafoundation.org/wiki/Terms_of_Use/ru">условиями использования</a>, а также соглашаетесь на неотзывную публикацию по лицензии <a class="external" target="_blank" href="https://en.wikipedia.org/wiki/ru:Википедия:Текст_Лицензии_Creative_Commons_Attribution-ShareAlike_3.0_Unported">CC-BY-SA 3.0</a>.',
+            licenseText: 'Нажимая кнопку «Сохранить», вы соглашаетесь с <a class="external" target="_blank" href="https://foundation.wikimedia.org/wiki/Terms_of_Use/ru">условиями использования</a>, а также соглашаетесь на неотзывную публикацию по лицензии <a class="external" target="_blank" href="https://en.wikipedia.org/wiki/ru:Википедия:Текст_Лицензии_Creative_Commons_Attribution-ShareAlike_3.0_Unported">CC-BY-SA 3.0</a>.',
             submitApiError: 'Во время сохранения листинга на сервере произошла ошибка, пожайлуста, попробуйте сохранить ещё раз',
             submitBlacklistError: 'Ошибка: текст содержит ссылку из чёрного списка, пожайлуста, удалите её и попробуйте сохранить снова',
             submitUnknownError: 'Ошибка: при попытке сохранить листинг произошла неизвестная ошибка, пожайлуста, попробуйте сохранить ещё раз',
@@ -1439,7 +1439,7 @@ mw.loader.using(['mediawiki.api'], function() {
         {
             // We do not use "Культурное_наследие_России/" here as Crimea is outside of that space
             // and is located at "Культурное_наследие/" space.
-            return StringUtils.contains(getCurrentPageName(), 'Культурное_наследие');
+            return StringUtils.contains(getCurrentPageName(), 'Культурное_наследие') && !StringUtils.contains(getCurrentPageName(), 'Культурное_наследие_Казахстана');
         }
 
         /**
@@ -1447,7 +1447,7 @@ mw.loader.using(['mediawiki.api'], function() {
          * the "edit" link in the section heading.
          */
         var addButtons = function() {
-            var pageBodyContentElement = $('#bodyContent');
+            var pageBodyContentElement = $('.mw-parser-output');
 
             var currentSectionIndex = 0;
             var currentListingIndex = 0;
