@@ -156,6 +156,57 @@ let CommonsApi = {
             categories,
             onSuccess
         );
+    },
+
+    /**
+     *
+     * @param categories list of category titles, e.g. ['Novosibirsk', 'Tomsk', 'Culture_of_Novosibirsk']
+     * @param onSuccess function which accepts single argument -  list where each item has category
+     * title and files count, e.g. [
+     *   {category: 'Novosibirsk', files: 51},
+     *   {category: 'Tomsk', files: 42}
+     *   {category: 'Culture_of_Novosibirsk', files: 48}
+     * ]
+     */
+    countCategoriesFiles: function(categories, onSuccess) {
+        let maxChunkSize = 30;
+        AsyncUtils.runChunks(
+            (categoriesChunk, onSuccess) => {
+                this.executeRequest(
+                    {
+                        action: 'query',
+                        titles: categoriesChunk.join("|"),
+                        prop: 'categoryinfo',
+                        format: 'json'
+                    },
+                    (data) => {
+                        let result = [];
+
+                        if (!data || !data.query || !data.query.pages) {
+                            return;
+                        }
+                        Object.keys(data.query.pages).forEach(function (key) {
+                            let pageInfo = data.query.pages[key];
+                            if (pageInfo.title) {
+                                const filesCount = (
+                                    (pageInfo.categoryinfo && pageInfo.categoryinfo.files) ?
+                                        pageInfo.categoryinfo.files : 0
+                                );
+                                result.push({
+                                    category: pageInfo.title,
+                                    files: filesCount
+                                });
+                            }
+                        });
+
+                        onSuccess(result);
+                    }
+                );
+            },
+            maxChunkSize,
+            categories,
+            onSuccess
+        );
     }
 };
 

@@ -27,6 +27,13 @@ class ListingTableHtml {
         warningElement.insertAfter(nameElement);
     }
 
+    addGalleryFilesCount(filesCount) {
+        this._listingTableElement.find('a.extiw').each(function () {
+            let linkElem = $(this);
+            linkElem.text(linkElem.text() + " (" + filesCount + ")");
+        });
+    }
+
     findCommonsCategory(parentCategory) {
         let commonsCategory = null;
 

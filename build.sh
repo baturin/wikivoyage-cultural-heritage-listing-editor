@@ -23,6 +23,7 @@ appendFile() {
 NATURAL_EDITOR_RESULTING_FILE=dist/natural-editor.js
 CULTURAL_EDITOR_KZ_RESULTING_FILE=dist/cultural-editor-kz.js
 NO_IMAGE_WARNING_FILE=dist/no-image-warning.js
+IMAGE_COUNT_FILE=dist/image-count.js
 
 writeHeader "$NATURAL_EDITOR_RESULTING_FILE"
 appendFile lib/messages.js "$NATURAL_EDITOR_RESULTING_FILE"
@@ -101,3 +102,16 @@ appendFile lib/listing-table-html.js "$NO_IMAGE_WARNING_FILE"
 appendFile lib/listing-editor-utils.js "$NO_IMAGE_WARNING_FILE"
 appendFile no-image-warning.js "$NO_IMAGE_WARNING_FILE"
 writeFooter "$NO_IMAGE_WARNING_FILE"
+
+writeHeader "$IMAGE_COUNT_FILE"
+appendFile lib/async-utils.js "$IMAGE_COUNT_FILE"
+appendFile lib/string-utils.js "$IMAGE_COUNT_FILE"
+appendFile lib/array-utils.js "$IMAGE_COUNT_FILE"
+appendFile lib/object-utils.js "$IMAGE_COUNT_FILE"
+appendFile lib/mediawiki-page.js "$IMAGE_COUNT_FILE"
+appendFile lib/commons-api.js "$IMAGE_COUNT_FILE"
+appendFile lib/listing-table-html.js "$IMAGE_COUNT_FILE"
+appendFile lib/listing-editor-utils.js "$IMAGE_COUNT_FILE"
+appendFile image-count.js "$IMAGE_COUNT_FILE"
+writeFooter "$IMAGE_COUNT_FILE"
+
