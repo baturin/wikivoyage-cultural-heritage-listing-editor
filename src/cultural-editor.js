@@ -529,21 +529,26 @@ mw.loader.using(['mediawiki.api'], function() {
                 if (parameterValue === undefined) {
                     parameterValue = '';
                 }
-                this._data += '|' + parameterName + "=" + parameterValue + "\n";
+                this._data += '|' + parameterName + "= " + parameterValue + "\n";
                 this._serializedParameters.push(parameterName);
             },
 
-            writeParametersLine: function(parameterNames) {
+            writeParametersLine: function(parameterNames, optionalParameters) {
                 for (var i = 0; i < parameterNames.length; i++) {
                     var parameterName = parameterNames[i];
                     var parameterValue = listingData[parameterName];
+                    var optional = optionalParameters && inArray(parameterName, optionalParameters);
+                    if (optional && (parameterValue === '' || parameterValue === undefined)) {
+                        continue;
+                    }
+
                     if (parameterValue === undefined) {
                         parameterValue = '';
                     }
                     if (i > 0) {
                         this._data += " ";
                     }
-                    this._data += "|" + parameterName + "=" + parameterValue;
+                    this._data += "|" + parameterName + "= " + parameterValue;
                     this._serializedParameters.push(parameterName);
                 }
                 this._data += "\n";
@@ -555,7 +560,7 @@ mw.loader.using(['mediawiki.api'], function() {
                         if (!arrayHasElement(this._serializedParameters, parameterName)) {
                             var parameterValue = listingData[parameterName];
                             if (parameterValue !== '' && parameterValue !== undefined) {
-                                this._data += '|' + parameterName + "=" + parameterValue + "\n"
+                                this._data += '|' + parameterName + "= " + parameterValue + "\n"
                             }
                         }
                     }
@@ -578,8 +583,7 @@ mw.loader.using(['mediawiki.api'], function() {
         serializer.writeParametersLine(["type", "status"]);
         serializer.writeParametersLine(["lat", "long", "precise"]);
         serializer.writeParameterLine("name");
-        serializer.writeParameterLine("knid");
-        serializer.writeParameterLine("complex", true);
+        serializer.writeParametersLine(["knid", "complex"], ["complex"]);
         serializer.writeParameterLine("knid-new");
         serializer.writeParametersLine(["region", "district"]);
         serializer.writeParametersLine(["municipality", "munid"]);
@@ -591,12 +595,11 @@ mw.loader.using(['mediawiki.api'], function() {
         serializer.writeParameterLine("image");
         serializer.writeParameterLine("wdid");
         serializer.writeParameterLine("wiki");
-        serializer.writeParameterLine("commonscat");
+        serializer.writeParametersLine(["commonscat", "protection"], ["protection"]);
         serializer.writeParameterLine("link");
         serializer.writeParameterLine("linkextra", true);
         serializer.writeParameterLine("document", true);
         serializer.writeParameterLine("doc", true);
-        serializer.writeParameterLine("protection", true);
         serializer.writeParameterLine("dismissed", true);
         serializer.writeOtherNonEmptyParameters();
         serializer.writeListingEnd();
