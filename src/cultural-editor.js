@@ -473,7 +473,32 @@ mw.loader.using(['mediawiki.api'], function() {
         },
         {
             id: 'description'
-        }
+        },
+        {
+            id: 'protection',
+            possibleValues: [
+                {
+                    value: '',
+                    title: ''
+                },
+                {
+                    value: 'Ф',
+                    title: 'федеральная'
+                },
+                {
+                    value: 'Р',
+                    title: 'региональная'
+                },
+                {
+                    value: 'М',
+                    title: 'местная'
+                },
+                {
+                    value: 'В',
+                    title: 'выявленный объект'
+                }
+            ]
+        },
     ];
 
     function createTemplateParameters(parameterDescriptors) {
@@ -1208,6 +1233,9 @@ mw.loader.using(['mediawiki.api'], function() {
             var inputLinkExtra = ListingEditorFormComposer.createInputFormRowText(
                 'input-linkextra', 'Ссылка №2', 'внешняя ссылка с дополнительной информацией об объекте'
             );
+            var inputProtection = ListingEditorFormComposer.createInputFormRowSelect(
+                'input-type', 'Категория охраны', monumentListingParameters.getParameter('protection').possibleValues
+            );
 
             var tableObjectProperties = ListingEditorFormComposer.createTableTwoColumns();
 
@@ -1254,6 +1282,7 @@ mw.loader.using(['mediawiki.api'], function() {
             tableObjectProperties.rightTableElement.append(inputLink.rowElement);
             tableObjectProperties.rightTableElement.append(inputLinkExtra.rowElement);
             tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
+            tableObjectProperties.rightTableElement.append(inputProtection.rowElement);
 
             editorForm.formElement.append(tableObjectProperties.wrapperElement);
 
@@ -1296,7 +1325,8 @@ mw.loader.using(['mediawiki.api'], function() {
                 document: inputDocument.inputElement,
                 link: inputLink.inputElement,
                 linkextra: inputLinkExtra.inputElement,
-                description: objectDescriptionRow.inputDescription
+                description: objectDescriptionRow.inputDescription,
+                protection: inputProtection.inputElement,
             };
 
             return {
