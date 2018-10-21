@@ -741,7 +741,7 @@ mw.loader.using(['mediawiki.api'], function() {
                 var images = [];
                 files.forEach(function(file) {
                     var extension = file.toLowerCase().substr(file.length - 4);
-                    if (extension === '.jpg' || extension === '.png' || extension === '.gif') {
+                    if (extension === '.jpg' || extension === '.png' || extension === '.gif' || extension === '.tif' || extension === '.tiff') {
                         images.push(file);
                     }
                 });
