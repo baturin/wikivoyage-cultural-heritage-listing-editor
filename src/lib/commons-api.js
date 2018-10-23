@@ -1,6 +1,6 @@
-let AsyncUtils = require('./async-utils');
+import { AsyncUtils } from "./async-utils";
 
-let CommonsApi = {
+export const CommonsApi = {
     baseUrl: 'https://commons.wikimedia.org/w/api.php',
 
     executeRequest: function(parameters, onSuccess) {
@@ -209,5 +209,3 @@ let CommonsApi = {
         );
     }
 };
-
-module.exports = CommonsApi;

@@ -1,5 +1,5 @@
 
-let StringUtils = {
+export const StringUtils = {
     contains: function(string, substring) {
         return string.indexOf(substring) >= 0;
     },
@@ -8,5 +8,3 @@ let StringUtils = {
         return string.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
     }
 };
-
-module.exports = StringUtils;

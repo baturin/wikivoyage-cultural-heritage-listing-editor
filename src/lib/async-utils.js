@@ -1,5 +1,5 @@
 
-let AsyncUtils = {
+export const AsyncUtils = {
     runSequence(functions, onSuccess, results) {
         if (!results) {
             results = [];
@@ -39,5 +39,3 @@ let AsyncUtils = {
         );
     }
 };
-
-module.exports = AsyncUtils;

@@ -1,6 +1,7 @@
-let StringUtils = require('./string-utils');
 
-let WikitextParser = {
+import { StringUtils } from "./string-utils";
+
+export const WikitextParser = {
     /**
      * Given a listing index, return the full wikitext for that listing
      * ("{{listing|key=value|...}}"). An index of 0 returns the first listing
@@ -15,6 +16,10 @@ let WikitextParser = {
         let listingSyntax, regexResult, listingMatchIndex;
         for (let i = 0; i <= listingIndex; i++) {
             regexResult = listingRegex.exec(wikitext);
+            if (!regexResult) {
+                return null;
+            }
+
             listingMatchIndex = regexResult.index;
             listingSyntax = regexResult[0];
         }
@@ -146,5 +151,3 @@ let WikitextParser = {
         return str.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&");
     }
 };
-
-module.exports = WikitextParser;

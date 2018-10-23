@@ -1,7 +1,7 @@
 
-let WikitextParser = require('./wikitext-parser');
+import { WikitextParser } from './wikitext-parser';
 
-class WikitextSectionEditor {
+export class WikitextSectionEditor {
     constructor(sectionText, listingName) {
         this._sectionText = sectionText;
         this._listingName = listingName;
@@ -13,6 +13,9 @@ class WikitextSectionEditor {
         let listingText = WikitextParser.getListingWikitextBraces(
             this._sectionText, this._listingName, listingIndex
         );
+        if (!listingText) {
+            return null;
+        }
         let listingData = WikitextParser.wikiTextToListing(listingText);
         for (let key in listingData) {
             if (!listingData.hasOwnProperty(key)) {
@@ -82,5 +85,3 @@ class WikitextSectionEditor {
         return sectionText;
     };
 }
-
-module.exports = WikitextSectionEditor;
