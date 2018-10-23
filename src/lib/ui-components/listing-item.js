@@ -3,24 +3,103 @@ import { WikivoyageApi } from "../wikivoyage-api";
 export class ListingItemComponent {
     constructor(listingItem) {
         this.listingItem = listingItem;
+        this.listingItemContainer = $('<div>');
     }
 
     render() {
-        const listingData = this.listingItem.data;
+        this.listingItemContainer.append(this.renderView());
 
-        const listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');
+        return [
+            this.listingItemContainer,
+            $('<hr/>')
+        ];
+    }
+
+    renderUpload() {
+        return (
+            $('<td>')
+                .attr(
+                    'style',
+                    (
+                        'width:10%; ' +
+                        'text-align: center; ' +
+                        'vertical-align: middle; ' +
+                        'font-size: 120%; ' +
+                        'background-color: #FFFACD'
+                    )
+                )
+                .append(
+                    $('<a>')
+                        .attr('href', this.composeUploadUrl())
+                        .attr('class', 'external text')
+                        .text('Загрузить фото')
+                )
+        );
+    }
+
+    renderEdit() {
+        const listingTable = $('<table border="0" style="font-size:97%; width:100%;">');
 
         const listingRow = $('<tr valign="top">');
-        if (listingData.status === 'destroyed') {
-            listingRow.attr('style', 'color:#808080;')
-        }
-
         listingTable.append(listingRow);
 
-        const imageCell = $('<td width="160px;">');
+        const imageCell = this.renderImageCell();
         listingRow.append(imageCell);
 
+        const dataCell = $('<td style="padding-left:10px;" valign="middle">');
+        listingRow.append(dataCell);
+
+        const listingData = this.listingItem.data;
+
+        const inputName = $('<input type="text">');
+        inputName.val(listingData.name);
+
+        const nameRow = $('<div>')
+            .append($('<div>').text('Название'))
+            .append($('<div>').append(inputName));
+        dataCell.append(nameRow);
+
+        const buttonsBlock = $('<div>').attr('class', 'ui-dialog-buttonset');
+        const buttonDiscard = this.renderButton('Отменить');
+        const buttonSave = this.renderButton('Сохранить');
+        buttonsBlock.append(buttonDiscard);
+        buttonsBlock.append(buttonSave);
+
+        buttonDiscard.click(() => {
+            this.listingItemContainer.empty();
+            this.listingItemContainer.append(this.renderView());
+        });
+        buttonSave.click(() => {
+            this.listingItem.data.name = inputName.val();
+
+            this.listingItemContainer.empty();
+            this.listingItemContainer.append(this.renderView());
+        });
+
+        dataCell.append(buttonsBlock);
+
+        listingRow.append(this.renderUpload());
+
+        return listingTable;
+    }
+
+    renderButton(buttonText) {
+        return (
+            $('<button>')
+                .attr('class', 'ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only')
+                .append(
+                    $('<span>')
+                        .attr('class', 'ui-button-text')
+                        .text(buttonText)
+                )
+        );
+    }
+
+    renderImage() {
+        const listingData = this.listingItem.data;
+
         const image = $('<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Village_without_photo.svg/150px-Village_without_photo.svg.png">');
+
         image.attr(
             'src',
             'https://upload.wikimedia.org/' +
@@ -32,11 +111,34 @@ export class ListingItemComponent {
             image.attr('alt', 'Нет фото');
             image.attr('class', 'thumbborder');
         }
-        imageCell.append(image);
 
         if (listingData.image) {
             WikivoyageApi.getImageInfo('File:' + listingData.image, (result) => image.attr('src', result.thumb));
         }
+
+        return image;
+    }
+
+    renderImageCell() {
+        const imageCell = $('<td width="160px;">');
+        imageCell.append(this.renderImage());
+        return imageCell;
+    }
+
+    renderView() {
+        const listingData = this.listingItem.data;
+
+        const listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');
+
+        const listingRow = $('<tr valign="top">');
+        if (listingData.status === 'destroyed') {
+            listingRow.attr('style', 'color:#808080;')
+        }
+
+        listingTable.append(listingRow);
+
+        const imageCell = this.renderImageCell();
+        listingRow.append(imageCell);
 
         const dataCell = $('<td style="padding-left:10px;" valign="middle">');
 
@@ -75,6 +177,15 @@ export class ListingItemComponent {
         const itemNameElement = $('<span class="monument-name" style="font-size:115%; font-weight:bold">');
         itemNameElement.text(listingData.name);
         dataCell.append(itemNameElement);
+
+        const editButton = this.renderEditButton();
+        // TODO handle only click on image
+        editButton.click(() => {
+            this.listingItemContainer.empty();
+            this.listingItemContainer.append(this.renderEdit());
+        });
+
+        dataCell.append(editButton);
 
         dataCell.append($('<br/>'));
 
@@ -129,7 +240,7 @@ export class ListingItemComponent {
         if (listingData.lat && listingData.long) {
             dataCell.append(
                 $('<a>')
-                    // TODO correct link & escaping
+                // TODO correct link & escaping
                     .attr('href', 'https://tools.wmflabs.org/wikivoyage/w/monmap1.php?lat=' + listingData.lat + '&lon=' + listingData.long + '&zoom=13&layer=OX&lang=ru')
                     .append(Icons.createMapIcon())
             );
@@ -223,32 +334,24 @@ export class ListingItemComponent {
 
         listingRow.append(this.renderUpload());
 
-        return [
-            listingTable,
-            $('<hr/>')
-        ];
+        return listingTable;
     }
 
-    renderUpload() {
-        return (
-            $('<td>')
-                .attr(
-                    'style',
-                    (
-                        'width:10%; ' +
-                        'text-align: center; ' +
-                        'vertical-align: middle; ' +
-                        'font-size: 120%; ' +
-                        'background-color: #FFFACD'
-                    )
-                )
-                .append(
-                    $('<a>')
-                        .attr('href', this.composeUploadUrl())
-                        .attr('class', 'external text')
-                        .text('Загрузить фото')
-                )
+    renderEditButton() {
+        const editListingButton = $('<span>').attr({
+            'class': 'vcard-edit-button noprint',
+            'style': 'padding-left: 5px;',
+        });
+        const editListingLink = (
+            $('<a>')
+                .attr({
+                    'class': 'icon-pencil',
+                    'title': 'Редактировать',
+                })
+                .text('Редактировать')
         );
+        editListingButton.append(editListingLink);
+        return editListingButton;
     }
 
     composeUploadUrl() {
