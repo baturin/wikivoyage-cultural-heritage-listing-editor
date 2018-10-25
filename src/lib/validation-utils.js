@@ -1,5 +1,5 @@
 
-let ValidationUtils = {
+export const ValidationUtils = {
     normalizeUrl: function(url) {
         let webRegex = new RegExp('^https?://', 'i');
         if (!webRegex.test(url) && url !== '') {
@@ -9,5 +9,3 @@ let ValidationUtils = {
         }
     }
 };
-
-module.exports = ValidationUtils;

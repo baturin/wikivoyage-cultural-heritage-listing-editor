@@ -7,6 +7,16 @@ import {SearchBar, SearchConstants} from "./lib/ui-components/search-bar";
 
 /**
  * TODO
+ *
+ * TOP:
+ * 1. Editor - all fields
+ * 2. Editor - real save
+ * 3. Load images optimization
+ * 4. Load lists sequentially
+ * 5. Filter by type/category
+ * 6. Compact/full view
+ * 7. Sort by street, name, category
+ *
  * 1. Integration with listing editor gadget.
  * 2. Integration with missing images gadget.
  * 3. Load commons images optimization.

@@ -1,5 +1,5 @@
 
-class Region {
+export class Region {
     constructor(id, title) {
         this._id = id;
         this._title = title;
@@ -14,7 +14,7 @@ class Region {
     }
 }
 
-let regions = [
+export const regions = [
     new Region("", "не задан"),
     new Region("ru-ad", "Адыгея"),
     new Region("ru-ba", "Башкортостан"),
@@ -102,5 +102,3 @@ let regions = [
     new Region("ru-yam", "Ямало-Ненецкий автономный округ"),
     new Region("ru-sev", "Севастополь")
 ];
-
-module.exports = regions;

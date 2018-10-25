@@ -1,4 +1,11 @@
 import { WikivoyageApi } from "../wikivoyage-api";
+import { culturalMonumentTypes } from "../cultural-monument-types";
+import { culturalMonumentStyles } from "../cultural-monument-styles";
+import { culturalMonumentProtections } from "../cultural-monument-protections";
+import { regions } from "../regions";
+import { ValidationUtils } from "../validation-utils";
+import { ListingItemIcons } from "./listing-item-icons";
+import { ListingItemFormComposer } from "./listing-item-form-composer";
 
 export class ListingItemComponent {
     constructor(listingItem) {
@@ -51,13 +58,201 @@ export class ListingItemComponent {
 
         const listingData = this.listingItem.data;
 
-        const inputName = $('<input type="text">');
+        const inputName = ListingItemFormComposer.createTextInputLarge();
+        const inputRegion = ListingItemFormComposer.createSelector(
+            regions.map(
+                (region) => ({
+                    title: region.getTitle(),
+                    value: region.getId()
+                })
+            )
+        );
+        const inputDistrict = ListingItemFormComposer.createTextInput();
+        const inputMunicipality = ListingItemFormComposer.createTextInput();
+        const inputBlock = ListingItemFormComposer.createTextInput();
+        const inputAddress = ListingItemFormComposer.createTextInput();
+
+        const inputLat = ListingItemFormComposer.createTextInputSmall();
+        const inputLong = ListingItemFormComposer.createTextInputSmall();
+        const inputPrecise= ListingItemFormComposer.createCheckboxInput();
+
+        const inputStyle = ListingItemFormComposer.createSelector(
+            culturalMonumentStyles.map(
+                (culturalMonumentStyle) => ({
+                    title: culturalMonumentStyle.getTitle(),
+                    value: culturalMonumentStyle.getValue()
+                })
+            )
+        );
+        const inputType = ListingItemFormComposer.createSelector(
+            culturalMonumentTypes.map(
+                (culturalMonumentType) => ({
+                    title: culturalMonumentType.getTitle(),
+                    value: culturalMonumentType.getValue()
+                })
+            )
+        );
+        const inputProtection = ListingItemFormComposer.createSelector(
+            culturalMonumentProtections.map(
+                (culturalMonumentProtection) => ({
+                    title: culturalMonumentProtection.getTitle(),
+                    value: culturalMonumentProtection.getValue()
+                })
+            )
+        );
+        const inputYear = ListingItemFormComposer.createTextInputSmall();
+        const inputAuthor = ListingItemFormComposer.createTextInput();
+        const inputDestroyed = ListingItemFormComposer.createCheckboxInput();
+
+        const inputImage = ListingItemFormComposer.createTextInput();
+        const inputWikipedia = ListingItemFormComposer.createTextInput();
+        const inputWikidata = ListingItemFormComposer.createTextInputSmall();
+        const inputCommons = ListingItemFormComposer.createTextInput();
+        const inputMunid = ListingItemFormComposer.createTextInputSmall();
+        const inputDocument = ListingItemFormComposer.createTextInput();
+        const inputLink = ListingItemFormComposer.createTextInput();
+        const inputLinkExtra = ListingItemFormComposer.createTextInput();
+
+        const inputKnid = ListingItemFormComposer.createTextInput(10);
+        const inputComplex = ListingItemFormComposer.createTextInput(10);
+        const inputKnidNew = ListingItemFormComposer.createTextInput(15);
+
+        const inputDescription = ListingItemFormComposer.createTextarea();
+
+        const directMappingInputs = {
+            name: inputName,
+            type: inputType,
+            region: inputRegion,
+            district: inputDistrict,
+            municipality: inputMunicipality,
+            block: inputBlock,
+            address: inputAddress,
+            lat: inputLat,
+            long: inputLong,
+            year: inputYear,
+            author: inputAuthor,
+            knid: inputKnid,
+            complex: inputComplex,
+            'knid-new': inputKnidNew,
+            image: inputImage,
+            wiki: inputWikipedia,
+            wdid: inputWikidata,
+            commonscat: inputCommons,
+            munid: inputMunid,
+            document: inputDocument,
+            link: inputLink,
+            linkextra: inputLinkExtra,
+            description: inputDescription,
+            protection: inputProtection,
+        };
+
+        const setValues = (listing) => {
+            Object.keys(directMappingInputs).forEach(function(key) {
+                if (listing[key]) {
+                    directMappingInputs[key].val(listing[key]);
+                }
+            });
+            if (listing['style']) {
+                inputStyle.val(listing['style'].toLowerCase());
+            }
+            inputDestroyed.attr('checked', listing['status'] === 'destroyed');
+            inputPrecise.attr('checked', listing['precise'] === 'yes');
+        };
+
+        const getValues = () => {
+            const listingData = {};
+            Object.keys(directMappingInputs).forEach(function(key) {
+                listingData[key] = directMappingInputs[key].val();
+            });
+            if (inputDestroyed.is(':checked')) {
+                listingData['status'] = 'destroyed';
+            } else {
+                listingData['status'] = '';
+            }
+            if (inputPrecise.is(':checked')) {
+                listingData['precise'] = 'yes';
+            } else {
+                listingData['precise'] = 'no';
+            }
+
+            listingData['link'] = ValidationUtils.normalizeUrl(listingData['link']);
+            listingData['linkextra'] = ValidationUtils.normalizeUrl(listingData['linkextra']);
+            listingData['style'] = inputStyle.val();
+            return listingData;
+        };
+
+        setValues(this.listingItem.data);
+
         inputName.val(listingData.name);
 
-        const nameRow = $('<div>')
-            .append($('<div>').text('Название'))
-            .append($('<div>').append(inputName));
+        const nameRow = (
+            ListingItemFormComposer.createFormRow('Название:')
+                .append(ListingItemFormComposer.createFormElement(null, inputName))
+        );
+
         dataCell.append(nameRow);
+
+        const addressRow = (
+            ListingItemFormComposer.createFormRow('Адрес:')
+                .append(ListingItemFormComposer.createFormElement('Регион', inputRegion))
+                .append(ListingItemFormComposer.createFormElement('Район', inputDistrict))
+                .append(ListingItemFormComposer.createFormElement('Населенный пункт', inputMunicipality))
+                .append(ListingItemFormComposer.createFormElement('Квартал', inputBlock))
+                .append(ListingItemFormComposer.createFormElement('Улица, дом', inputAddress))
+        );
+
+        dataCell.append(addressRow);
+
+        const coordRow = (
+            ListingItemFormComposer.createFormRow('Координаты: ')
+                .append(ListingItemFormComposer.createFormElement('Широта', inputLat))
+                .append(ListingItemFormComposer.createFormElement('Долгота', inputLong))
+                .append(ListingItemFormComposer.createFormElement('Заданы точно?', inputPrecise))
+        );
+
+        dataCell.append(coordRow);
+
+        const propsRow = (
+            ListingItemFormComposer.createFormRow('Свойства: ')
+                .append(ListingItemFormComposer.createFormElement('Тип', inputType))
+                .append(ListingItemFormComposer.createFormElement('Стиль', inputStyle))
+                .append(ListingItemFormComposer.createFormElement('Категория охраны', inputProtection))
+                .append(ListingItemFormComposer.createFormElement('Год', inputYear))
+                .append(ListingItemFormComposer.createFormElement('Автор', inputAuthor))
+                .append(ListingItemFormComposer.createFormElement('Утрачен', inputDestroyed))
+        );
+
+        dataCell.append(propsRow);
+
+        const linksRow = (
+            ListingItemFormComposer.createFormRow('Ссылки: ')
+                .append(ListingItemFormComposer.createFormElement('Изображение', inputImage))
+                .append(ListingItemFormComposer.createFormElement('Википедия', inputWikipedia))
+                .append(ListingItemFormComposer.createFormElement('Викиданные', inputWikidata))
+                .append(ListingItemFormComposer.createFormElement('Викисклад', inputCommons))
+                .append(ListingItemFormComposer.createFormElement('Викиданные нас. пункта', inputMunid))
+                .append(ListingItemFormComposer.createFormElement('Код документа', inputDocument))
+                .append(ListingItemFormComposer.createFormElement('Ссылка №1', inputLink))
+                .append(ListingItemFormComposer.createFormElement('Ссылка №2', inputLinkExtra))
+        );
+
+        dataCell.append(linksRow);
+
+        const numbersRow = (
+            ListingItemFormComposer.createFormRow('Номера: ')
+                .append(ListingItemFormComposer.createFormElement('10-значный № объекта', inputKnid))
+                .append(ListingItemFormComposer.createFormElement('10-значный № комплекса', inputComplex))
+                .append(ListingItemFormComposer.createFormElement('15-значный № объекта', inputKnidNew))
+        );
+
+        dataCell.append(numbersRow);
+
+        const descriptionRow = (
+            ListingItemFormComposer.createFormRow('Описание:')
+                .append(ListingItemFormComposer.createFormElement(null, inputDescription))
+        );
+
+        dataCell.append(descriptionRow);
 
         const buttonsBlock = $('<div>').attr('class', 'ui-dialog-buttonset');
         const buttonDiscard = this.renderButton('Отменить');
@@ -70,7 +265,7 @@ export class ListingItemComponent {
             this.listingItemContainer.append(this.renderView());
         });
         buttonSave.click(() => {
-            this.listingItem.data.name = inputName.val();
+            this.listingItem.data = getValues();
 
             this.listingItemContainer.empty();
             this.listingItemContainer.append(this.renderView());
@@ -159,18 +354,18 @@ export class ListingItemComponent {
         listingRow.append(dataCell);
 
         if (this.listingItem.data.type === 'architecture') {
-            dataCell.append(Icons.MonumentType.createArchitectureIcon());
+            dataCell.append(ListingItemIcons.MonumentType.createArchitectureIcon());
         } else if (this.listingItem.data.type === 'history') {
-            dataCell.append(Icons.MonumentType.createHistoryIcon());
+            dataCell.append(ListingItemIcons.MonumentType.createHistoryIcon());
         } else if (this.listingItem.data.type === 'archeology') {
-            dataCell.append(Icons.MonumentType.createArcheologyIcon());
+            dataCell.append(ListingItemIcons.MonumentType.createArcheologyIcon());
         } else if (this.listingItem.data.type === 'monument') {
-            dataCell.append(Icons.MonumentType.createMonumentIcon());
+            dataCell.append(ListingItemIcons.MonumentType.createMonumentIcon());
         }
         dataCell.append('&nbsp;');
 
         if (isMainComplexElement) {
-            dataCell.append(Icons.createComplexMainElementIcon());
+            dataCell.append(ListingItemIcons.createComplexMainElementIcon());
             dataCell.append('&nbsp;');
         }
 
@@ -199,7 +394,7 @@ export class ListingItemComponent {
             dataCell.append(
                 $('<a>')
                     .attr('href', 'http://wikidata.org/wiki/' + listingData.munid)
-                    .append(Icons.createMunidIcon())
+                    .append(ListingItemIcons.createMunidIcon())
             );
         }
         if (listingData.block) {
@@ -242,7 +437,7 @@ export class ListingItemComponent {
                 $('<a>')
                 // TODO correct link & escaping
                     .attr('href', 'https://tools.wmflabs.org/wikivoyage/w/monmap1.php?lat=' + listingData.lat + '&lon=' + listingData.long + '&zoom=13&layer=OX&lang=ru')
-                    .append(Icons.createMapIcon())
+                    .append(ListingItemIcons.createMapIcon())
             );
             if (listingData.precise !== 'yes') {
                 dataCell.append($('<span style="color:#FF0000">!</span>'));
@@ -256,7 +451,7 @@ export class ListingItemComponent {
                     .attr('alt', 'Статья в Википедии')
                     // TODO urlencode
                     .attr('href', 'http://ru.wikipedia.org/wiki/' + listingData.wiki)
-                    .append(Icons.createWikipediaIcon())
+                    .append(ListingItemIcons.createWikipediaIcon())
             );
         }
 
@@ -266,7 +461,7 @@ export class ListingItemComponent {
                     .attr('alt', 'Категория на Викискладе')
                     // TODO urlencode
                     .attr('href', 'http://commons.wikimedia.org/wiki/Category:' + listingData.commonscat)
-                    .append(Icons.createCommonsIcon())
+                    .append(ListingItemIcons.createCommonsIcon())
             );
             dataCell.append('&thinsp;&thinsp;');
         }
@@ -277,7 +472,7 @@ export class ListingItemComponent {
                     .attr('alt', 'Элемент в Викиданных')
                     // TODO urlencode
                     .attr('href', 'http://www.wikidata.org/wiki/' + listingData.wdid)
-                    .append(Icons.createWikidataIcon())
+                    .append(ListingItemIcons.createWikidataIcon())
             );
         }
 
@@ -369,99 +564,3 @@ export class ListingItemComponent {
         return 'http://commons.wikimedia.org/w/index.php?' + $.param(params);
     }
 }
-
-const Icons = {
-    THUMBS_URL: 'https://upload.wikimedia.org/wikipedia/commons/thumb/',
-
-    createComplexMainElementIcon() {
-        return $('<img>').attr({
-            'src': Icons.THUMBS_URL + '8/8c/Location_dot_darkslategray.svg/10px-Location_dot_darkslategray.svg.png',
-            'alt': 'главный элемент комплекса',
-            'width': '10px',
-            'height': '10px',
-        });
-    },
-
-    createMunidIcon() {
-        return $('<img>').attr({
-            'src': Icons.THUMBS_URL + 'f/ff/Wikidata-logo.svg/18px-Wikidata-logo.svg.png',
-            'alt': 'район на Викиданных',
-            'width': '18px',
-            'height': '10px'
-        });
-    },
-
-    createMapIcon() {
-        return $('<img>').attr({
-            'src': Icons.THUMBS_URL + 'c/ce/Map_mag.png/17px-Map_mag.png',
-            'alt': 'Расположение на карте',
-            'width': '17px',
-            'height': '17px'
-        });
-    },
-
-    createWikipediaIcon() {
-        return $('<img>').attr({
-            'src': Icons.THUMBS_URL + '8/80/Wikipedia-logo-v2.svg/19px-Wikipedia-logo-v2.svg.png',
-            'alt': 'Расположение на карте',
-            'width': '19px',
-            'height': '17px'
-        });
-    },
-
-    createCommonsIcon() {
-        return $('<img>').attr({
-            'src': Icons.THUMBS_URL + '4/4a/Commons-logo.svg/17px-Commons-logo.svg.png',
-            'alt': 'Расположение на карте',
-            'width': '17px',
-            'height': '23px'
-        });
-    },
-
-    createWikidataIcon() {
-        return $('<img>').attr({
-            'src': Icons.THUMBS_URL + 'f/ff/Wikidata-logo.svg/24px-Wikidata-logo.svg.png',
-            'alt': 'Расположение на карте',
-            'width': '24px',
-            'height': '13px'
-        });
-    },
-
-    MonumentType: {
-        createArchitectureIcon() {
-            return $('<img>').attr({
-                'src': Icons.THUMBS_URL + 'c/cc/PorticoIcon.svg/20px-PorticoIcon.svg.png',
-                'alt': 'памятник архитектуры',
-                'width': '20px',
-                'height': '20px'
-            });
-        },
-
-        createHistoryIcon() {
-            return $('<img>').attr({
-                'src': Icons.THUMBS_URL + 'c/c8/HistoryIcon.svg/18px-HistoryIcon.svg.png',
-                'alt': 'памятник истории',
-                'width': '18px',
-                'height': '18px',
-            });
-        },
-
-        createArcheologyIcon() {
-            return $('<img>').attr({
-                'src': Icons.THUMBS_URL + 'c/ce/ArcheologyIcon.svg/22px-ArcheologyIcon.svg.png',
-                'alt': 'памятник археологии',
-                'width': '22px',
-                'height': '22px',
-            });
-        },
-
-        createMonumentIcon() {
-            return $('<img>').attr({
-                'src': Icons.THUMBS_URL + 'c/c2/MonumentIcon.svg/20px-MonumentIcon.svg.png',
-                'alt': 'памятник монументального искусства',
-                'width': '20px',
-                'height': '20px'
-            })
-        }
-    }
-};

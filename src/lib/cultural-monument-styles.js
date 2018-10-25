@@ -1,5 +1,5 @@
 
-class CulturalMonumentStyle
+export class CulturalMonumentStyle
 {
     constructor(value, title)
     {
@@ -18,10 +18,8 @@ class CulturalMonumentStyle
     }
 }
 
-let culturalMonumentStyles = [
+export const culturalMonumentStyles = [
     new CulturalMonumentStyle('', ''),
     new CulturalMonumentStyle('конструктивизм', 'конструктивизм'),
     new CulturalMonumentStyle('модерн', 'модерн')
 ];
-
-module.exports = culturalMonumentStyles;
