@@ -1,4 +1,9 @@
 
+import { ListingItemFormComposer } from "./listing-item-form-composer";
+import { culturalMonumentTypes } from "../cultural-monument-types";
+import { culturalMonumentStyles } from "../cultural-monument-styles";
+import { culturalMonumentProtections } from "../cultural-monument-protections";
+
 export class SearchBar {
     constructor(onUpdate) {
         this._onUpdate = onUpdate;
@@ -29,6 +34,34 @@ export class SearchBar {
         this._inputCoordinates.append($('<option>').attr('value', SearchConstants.COORDINATES_EXISTS).text('Заданы, любые'));
         this._inputCoordinates.append($('<option>').attr('value', SearchConstants.COORDINATES_NO).text('Не заданы'));
 
+        let filterStyleVals = culturalMonumentStyles.map(
+            (culturalMonumentStyle) => ({
+                title: culturalMonumentStyle.getTitle(),
+                value: culturalMonumentStyle.getValue()
+            })
+        );
+        this._inputStyle = ListingItemFormComposer.createSelector(
+            filterStyleVals
+        );
+
+        const filterTypeVals = culturalMonumentTypes.map(
+            (culturalMonumentType) => ({
+                title: culturalMonumentType.getTitle(),
+                value: culturalMonumentType.getValue()
+            })
+        );
+        this._inputType = ListingItemFormComposer.createSelector(
+            filterTypeVals
+        );
+
+        const filterProtectionVals = culturalMonumentProtections.map(
+            (culturalMonumentProtection) => ({
+                title: culturalMonumentProtection.getTitle(),
+                value: culturalMonumentProtection.getValue()
+            })
+        );
+        this._inputProtection = ListingItemFormComposer.createSelector(filterProtectionVals);
+
         this._searchBar.append($('<div>').append($('<b>').text('Фильтры')));
 
         const filtersBar = $('<div>');
@@ -46,10 +79,24 @@ export class SearchBar {
         filtersBar.append(' Координаты: ');
         filtersBar.append(this._inputCoordinates);
 
+        filtersBar.append($('<hr>'));
+
+        filtersBar.append(' Стиль: ');
+        filtersBar.append(this._inputStyle);
+
+        filtersBar.append(' Тип: ');
+        filtersBar.append(this._inputType);
+
+        filtersBar.append(' Категория охраны: ');
+        filtersBar.append(this._inputProtection);
+
         this._inputSearchDescription.keyup(() => this._onUpdateSearch());
         this._inputSearchAddress.keyup(() => this._onUpdateSearch());
         this._inputImage.change(() => this._onUpdateSearch());
         this._inputCoordinates.change(() => this._onUpdateSearch());
+        this._inputType.change(() => this._onUpdateSearch());
+        this._inputStyle.change(() => this._onUpdateSearch());
+        this._inputProtection.change(() => this._onUpdateSearch());
     }
 
     _onUpdateSearch() {
@@ -61,7 +108,10 @@ export class SearchBar {
             this._inputSearchDescription.val(),
             this._inputSearchAddress.val(),
             this._inputImage.val(),
-            this._inputCoordinates.val()
+            this._inputCoordinates.val(),
+            this._inputType.val(),
+            this._inputStyle.val(),
+            this._inputProtection.val()
         );
     }
 }
@@ -76,14 +126,17 @@ export const SearchConstants = {
     COORDINATES_PRECISE: 'precise',
     COORDINATES_NOT_PRECISE: 'not-precise',
     COORDINATES_NO: 'no'
-}
+};
 
 export class SearchFilter {
-    constructor(searchText, searchAddress, photo, coordinates) {
+    constructor(searchText, searchAddress, photo, coordinates, type, style, protection) {
         this._searchDescription = searchText;
         this._searchAddress = searchAddress;
         this._photo = photo;
         this._coordinates = coordinates;
+        this._type = type;
+        this._style = style;
+        this._protection = protection;
     }
 
     getSearchDescription() {
@@ -100,5 +153,17 @@ export class SearchFilter {
 
     getCoordinates() {
         return this._coordinates;
+    }
+
+    getType() {
+        return this._type;
+    }
+
+    getStyle() {
+        return this._style;
+    }
+
+    getProtection() {
+        return this._protection;
     }
 }

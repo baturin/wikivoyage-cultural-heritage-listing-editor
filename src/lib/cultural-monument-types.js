@@ -19,6 +19,7 @@ export class CulturalMonumentType
 }
 
 export const culturalMonumentTypes = [
+    new CulturalMonumentType('', ''),
     new CulturalMonumentType('architecture', 'памятник архитектуры'),
     new CulturalMonumentType('history', 'памятник истории'),
     new CulturalMonumentType('monument', 'памятник монументального искусства'),

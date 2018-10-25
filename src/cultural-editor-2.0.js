@@ -5,7 +5,7 @@ import { PaginationComponent } from "./lib/ui-components/pagination";
 import { ListingItemComponent} from "./lib/ui-components/listing-item";
 import { SearchBar, SearchConstants } from "./lib/ui-components/search-bar";
 import { AsyncUtils } from "./lib/async-utils";
-import {WikivoyageApi} from "./lib/wikivoyage-api";
+import { WikivoyageApi } from "./lib/wikivoyage-api";
 
 /**
  * TODO
@@ -164,6 +164,9 @@ $(document).ready(() => {
             const searchAddress = filter.getSearchAddress().toLowerCase();
             const photo = filter.getPhoto();
             const coordinates = filter.getCoordinates();
+            const type = filter.getType();
+            const style = filter.getStyle();
+            const protection = filter.getProtection();
 
             this.state.filterListingItems = this.state.allListingItems.filter(
                 (item) => (
@@ -207,6 +210,12 @@ $(document).ready(() => {
                             coordinates === SearchConstants.COORDINATES_NO &&
                             (!item.data.lat || !item.data.long)
                         )
+                    ) && (
+                        !type || (item.data.type === type)
+                    ) && (
+                        !style || (item.data.style === style)
+                    ) && (
+                        !protection || (item.data.protection === protection)
                     )
                 )
             );
