@@ -17,7 +17,9 @@ export const AsyncUtils = {
                 );
             });
         } else {
-            onSuccess(results);
+            if (onSuccess) {
+                onSuccess(results);
+            }
         }
     },
 

@@ -1,4 +1,3 @@
-import { WikivoyageApi } from "../wikivoyage-api";
 import { culturalMonumentTypes } from "../cultural-monument-types";
 import { culturalMonumentStyles } from "../cultural-monument-styles";
 import { culturalMonumentProtections } from "../cultural-monument-protections";
@@ -292,6 +291,7 @@ export class ListingItemComponent {
 
     renderImage() {
         const listingData = this.listingItem.data;
+        const imageThumb = this.listingItem.imageThumb;
 
         const image = $('<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Village_without_photo.svg/150px-Village_without_photo.svg.png">');
 
@@ -307,16 +307,23 @@ export class ListingItemComponent {
             image.attr('class', 'thumbborder');
         }
 
-        if (listingData.image) {
-            WikivoyageApi.getImageInfo('File:' + listingData.image, (result) => image.attr('src', result.thumb));
+        if (listingData.image && imageThumb) {
+            image.attr('src', imageThumb);
         }
 
         return image;
     }
 
+    onImageThumbUpdated() {
+        if (this.image) {
+            this.image.attr('src', this.listingItem.imageThumb);
+        }
+    }
+
     renderImageCell() {
         const imageCell = $('<td width="160px;">');
-        imageCell.append(this.renderImage());
+        this.image = this.renderImage();
+        imageCell.append(this.image);
         return imageCell;
     }
 

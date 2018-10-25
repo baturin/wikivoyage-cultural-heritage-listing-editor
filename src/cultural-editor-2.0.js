@@ -3,19 +3,19 @@ import { MediawikiApi } from "./lib/mediawiki-api";
 import { WikitextSectionEditor } from './lib/wikitext-section-editor';
 import { PaginationComponent } from "./lib/ui-components/pagination";
 import { ListingItemComponent} from "./lib/ui-components/listing-item";
-import {SearchBar, SearchConstants} from "./lib/ui-components/search-bar";
+import { SearchBar, SearchConstants } from "./lib/ui-components/search-bar";
+import { AsyncUtils } from "./lib/async-utils";
+import {WikivoyageApi} from "./lib/wikivoyage-api";
 
 /**
  * TODO
  *
  * TOP:
- * 1. Editor - all fields
- * 2. Editor - real save
- * 3. Load images optimization
- * 4. Load lists sequentially
- * 5. Filter by type/category
- * 6. Compact/full view
- * 7. Sort by street, name, category
+ * 1. Editor - real save
+ * 2. Load images optimization
+ * 3. Filter by type/category
+ * 4. Compact/full view
+ * 5. Sort by street, name, category
  *
  * 1. Integration with listing editor gadget.
  * 2. Integration with missing images gadget.
@@ -27,6 +27,7 @@ import {SearchBar, SearchConstants} from "./lib/ui-components/search-bar";
  * 9. Object passport document.
  * 10. Advanced gallery.
  * 11. Compact/full view.
+ * 12. Items on page selector.
  */
 
 $(document).ready(() => {
@@ -105,8 +106,10 @@ $(document).ready(() => {
         loadData(pages) {
             const api = new MediawikiApi();
 
-            pages.forEach((page) => {
+            const loadPageListings = (page, onSuccess) => {
                 api.getPageText(page).then((text) => {
+                    const listings = [];
+
                     const sectionEditor = new WikitextSectionEditor(text, 'monument');
                     let listingIndex = 0;
                     while (true) {
@@ -117,17 +120,35 @@ $(document).ready(() => {
                         }
 
                         let listingItem = new ListingItem(listingData, page);
-                        this.state.allListingItems.push(listingItem);
-                        this.state.filterListingItems.push(listingItem);
+                        listings.push(listingItem);
 
                         listingIndex++;
                     }
 
-                    this.updateCurrentListingItems();
+                    onSuccess(listings);
                 }).catch((reason) => {
                     window.console.error(reason);
+                    onSuccess([]);
                 });
-            });
+            };
+
+            AsyncUtils.runSequence(
+                pages.map(
+                    (page) => (
+                        (onSuccess) => loadPageListings(page, onSuccess)
+                    )
+                ),
+                (pagesListingItems) => {
+                    const allListingItems = pagesListingItems.reduce(
+                        (pageListingItems, acc) => pageListingItems.concat(acc),
+                        []
+                    );
+
+                    this.state.allListingItems = allListingItems;
+                    this.state.filterListingItems = allListingItems;
+                    this.updateCurrentListingItems();
+                }
+            );
         }
 
         updateCurrentListingItems() {
@@ -212,10 +233,33 @@ $(document).ready(() => {
 
             this.dataElement.append(...topPagination.render());
 
+            const listingComponents = [];
+
             this.state.currentListingItems.forEach((listingItem) => {
                 const listingComponent = new ListingItemComponent(listingItem);
                 this.dataElement.append(...listingComponent.render());
+                listingComponents.push(listingComponent);
             });
+
+
+            AsyncUtils.runSequence(
+                listingComponents.map(
+                    (listingComponent) => (onSuccess) => {
+                        if (listingComponent.listingItem.data.image && !listingComponent.listingItem.imageThumb) {
+                            WikivoyageApi.getImageInfo(
+                                'File:' + listingComponent.listingItem.data.image,
+                                (result) => {
+                                    listingComponent.listingItem.imageThumb = result.thumb;
+                                    listingComponent.onImageThumbUpdated();
+                                    onSuccess();
+                                }
+                            )
+                        } else {
+                            onSuccess();
+                        }
+                    }
+                )
+            );
 
             this.dataElement.append(...bottomPagination.render());
         }
