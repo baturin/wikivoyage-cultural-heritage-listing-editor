@@ -36,7 +36,7 @@ export class PaginationComponent {
         }
         paginationElement.append(this.createPaginationItemElement(this.currentPage, this.currentPage));
 
-        for (let pageNumber = this.currentPage + 1; pageNumber < endPage; pageNumber++) {
+        for (let pageNumber = this.currentPage + 1; pageNumber < endPage + 1; pageNumber++) {
             paginationElement.append(this.createPaginationItemElement(pageNumber, pageNumber));
         }
 
