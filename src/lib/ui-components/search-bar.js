@@ -18,21 +18,47 @@ export class SearchBar {
     _initComponents() {
         this._searchBar = $('<div style="padding: 10px; background-color: #f8f9fa; border: 1px solid #a2a9b1">');
 
-        this._inputSearchDescription = $('<input type="text">');
+        this._inputSearchDescription = ListingItemFormComposer.createTextInput();
 
-        this._inputSearchAddress = $('<input type="text">');
+        this._inputSearchAddress = ListingItemFormComposer.createTextInput();
 
-        this._inputImage = $('<select>');
-        this._inputImage.append($('<option>').attr('value', SearchConstants.PHOTO_ANY).text(''));
-        this._inputImage.append($('<option>').attr('value', SearchConstants.PHOTO_NO).text('Отсутствует'));
-        this._inputImage.append($('<option>').attr('value', SearchConstants.PHOTO_YES).text('Присутствует'));
+        this._inputImage = ListingItemFormComposer.createSelector([
+            {
+                title: '',
+                value: SearchConstants.PHOTO_ANY
+            },
+            {
+                title: 'Отсутствует',
+                value: SearchConstants.PHOTO_NO
+            },
+            {
+                title: 'Присутствует',
+                value: SearchConstants.PHOTO_YES
+            }
+        ]);
 
-        this._inputCoordinates = $('<select>');
-        this._inputCoordinates.append($('<option>').attr('value', SearchConstants.COORDINATES_ANY).text(''));
-        this._inputCoordinates.append($('<option>').attr('value', SearchConstants.COORDINATES_PRECISE).text('Заданы, точные'));
-        this._inputCoordinates.append($('<option>').attr('value', SearchConstants.COORDINATES_NOT_PRECISE).text('Заданы, неточные'));
-        this._inputCoordinates.append($('<option>').attr('value', SearchConstants.COORDINATES_EXISTS).text('Заданы, любые'));
-        this._inputCoordinates.append($('<option>').attr('value', SearchConstants.COORDINATES_NO).text('Не заданы'));
+        this._inputCoordinates = ListingItemFormComposer.createSelector([
+            {
+                title: '',
+                value: SearchConstants.COORDINATES_ANY
+            },
+            {
+                title: 'Заданы, точные',
+                value: SearchConstants.COORDINATES_PRECISE
+            },
+            {
+                title: 'Заданы, неточные',
+                value: SearchConstants.COORDINATES_NOT_PRECISE
+            },
+            {
+                title: 'Заданы, любые',
+                value: SearchConstants.COORDINATES_EXISTS
+            },
+            {
+                title: 'Не заданы',
+                value: SearchConstants.COORDINATES_NO
+            }
+        ]);
 
         let filterStyleVals = culturalMonumentStyles.map(
             (culturalMonumentStyle) => ({
@@ -62,33 +88,77 @@ export class SearchBar {
         );
         this._inputProtection = ListingItemFormComposer.createSelector(filterProtectionVals);
 
-        this._searchBar.append($('<div>').append($('<b>').text('Фильтры')));
+        this._hideLink = $('<a href="javascript:;" style="display: none;">').text('[Скрыть]');
+        this._showLink = $('<a href="javascript:;">').text('[Показать]');
 
-        const filtersBar = $('<div>');
+        this._searchBar
+            .append(
+                $('<div>')
+                    .append(
+                        $('<b>').text('Фильтры')
+                    )
+                    .append('&nbsp;')
+                    .append(this._hideLink)
+                    .append(this._showLink)
+            );
 
-        filtersBar.append('Название или описание: ');
-        this._searchBar.append(filtersBar);
-        filtersBar.append(this._inputSearchDescription);
+        this._filtersBar = $('<div style="display: none;">');
 
-        filtersBar.append(' Адрес: ');
-        filtersBar.append(this._inputSearchAddress);
+        this._hideLink.click(() => {
+            this._hideLink.hide();
+            this._showLink.show();
+            this._filtersBar.hide();
+        });
 
-        filtersBar.append(' Фотография: ');
-        filtersBar.append(this._inputImage);
+        this._showLink.click(() => {
+            this._showLink.hide();
+            this._hideLink.show();
+            this._filtersBar.show();
+        });
 
-        filtersBar.append(' Координаты: ');
-        filtersBar.append(this._inputCoordinates);
+        this._searchBar.append(this._filtersBar);
 
-        filtersBar.append($('<hr>'));
+        this._filtersBar.append(
+            $('<div style="padding: 5px;">')
+                .append('Название или описание: ')
+                .append(this._inputSearchDescription)
+        );
 
-        filtersBar.append(' Стиль: ');
-        filtersBar.append(this._inputStyle);
+        this._filtersBar.append(
+            $('<div style="padding: 5px;">')
+                .append('Адрес: ')
+                .append(this._inputSearchAddress)
+        );
 
-        filtersBar.append(' Тип: ');
-        filtersBar.append(this._inputType);
+        this._filtersBar.append(
+            $('<div style="padding: 5px;">')
+                .append('Фотография: ')
+                .append(this._inputImage)
+        );
 
-        filtersBar.append(' Категория охраны: ');
-        filtersBar.append(this._inputProtection);
+        this._filtersBar.append(
+            $('<div style="padding: 5px;">')
+                .append('Координаты: ')
+                .append(this._inputCoordinates)
+        );
+
+        this._filtersBar.append(
+            $('<div style="padding: 5px;">')
+                .append('Стиль: ')
+                .append(this._inputStyle)
+        );
+
+        this._filtersBar.append(
+            $('<div style="padding: 5px;">')
+                .append('Тип: ')
+                .append(this._inputType)
+        );
+
+        this._filtersBar.append(
+            $('<div style="padding: 5px;">')
+                .append('Категория охраны: ')
+                .append(this._inputProtection)
+        );
 
         this._inputSearchDescription.keyup(() => this._onUpdateSearch());
         this._inputSearchAddress.keyup(() => this._onUpdateSearch());
