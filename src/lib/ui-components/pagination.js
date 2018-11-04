@@ -2,13 +2,15 @@
 export class PaginationComponent {
     constructor(itemsCount, itemsPerPage, currentPage, setPageFunction) {
         this.itemsPerPage = itemsPerPage;
-        this.pagesCount = Math.ceil(itemsCount / itemsPerPage);
+        if (this.itemsPerPage !== 0) {
+            this.pagesCount = Math.ceil(itemsCount / itemsPerPage);
+        }
         this.setPageFunction = setPageFunction;
         this.currentPage = currentPage;
     }
 
     render() {
-        if (this.pagesCount < 2) {
+        if (this.itemsPerPage === 0 || this.pagesCount < 2) {
             return [];
         }
 

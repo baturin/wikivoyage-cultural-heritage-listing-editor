@@ -5,9 +5,11 @@ import { regions } from "../regions";
 import { ValidationUtils } from "../validation-utils";
 import { ListingItemIcons } from "./listing-item-icons";
 import { ListingItemFormComposer } from "./listing-item-form-composer";
+import {SearchConstants} from "./search-bar";
 
 export class ListingItemComponent {
-    constructor(listingItem) {
+    constructor(listingItem, view) {
+        this.view = view;
         this.listingItem = listingItem;
         this.listingItemContainer = $('<div>');
     }
@@ -328,6 +330,22 @@ export class ListingItemComponent {
     }
 
     renderView() {
+        if (this.view === SearchConstants.VIEW_COMPACT) {
+            return this.renderViewCompact();
+        } else {
+            return this.renderViewFull();
+        }
+    }
+
+    renderViewCompact() {
+        const listingData = this.listingItem.data;
+        return $('<div>')
+            .append($('<b>').text(listingData.name))
+            .append($('<br/>'))
+            .append(listingData.address)
+    }
+
+    renderViewFull() {
         const listingData = this.listingItem.data;
 
         const listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');

@@ -13,21 +13,16 @@ import { WikivoyageApi } from "./lib/wikivoyage-api";
  * TOP:
  * 1. Editor - real save
  * 2. Load images optimization
- * 3. Filter by type/category
- * 4. Compact/full view
- * 5. Sort by street, name, category
+ * 3. Sort by street, name, category
  *
  * 1. Integration with listing editor gadget.
  * 2. Integration with missing images gadget.
- * 3. Load commons images optimization.
- * 4. Load lists sequentially, show progress.
+ * 3. Show loading progress.
  * 5. Complete listing template implementation.
- * 6. Filtering: street, no coordinates, no images, type/category.
- * 7. Sort: by street, by name, by type/category.
- * 9. Object passport document.
- * 10. Advanced gallery.
- * 11. Compact/full view.
- * 12. Items on page selector.
+ * 6. Sort: by street, by name, by type/category.
+ * 7. Object passport document.
+ * 8. Advanced gallery.
+ * 9. Better compact view.
  */
 
 $(document).ready(() => {
@@ -83,6 +78,7 @@ $(document).ready(() => {
             this.filterListingItems = [];
             this.page = 0;
             this.itemsPerPage = 10;
+            this.view = SearchConstants.VIEW_FULL;
         }
     }
 
@@ -98,7 +94,9 @@ $(document).ready(() => {
             this.rootElement = rootElement;
             this.state = new HeritageListGadgetState();
             this.searchBar = new SearchBar(
-                (filter) => this.updateFilterListingItems(filter)
+                (filter) => this.updateFilterListingItems(filter),
+                (itemsOnPage) => this.updateItemsOnPage(itemsOnPage),
+                (view) => this.updateView(view)
             );
             this.dataElement = $('<div>');
         }
@@ -156,11 +154,26 @@ $(document).ready(() => {
         }
 
         updateCurrentListingItems() {
-            this.state.currentListingItems = this.state.filterListingItems.slice(
-                this.state.page * this.state.itemsPerPage,
-                (this.state.page + 1) * this.state.itemsPerPage
-            );
+            if (this.state.itemsPerPage !== 0) {
+                this.state.currentListingItems = this.state.filterListingItems.slice(
+                    this.state.page * this.state.itemsPerPage,
+                    (this.state.page + 1) * this.state.itemsPerPage
+                );
+            } else {
+                this.state.currentListingItems = this.state.filterListingItems;
+            }
             this.renderData();
+        }
+
+        updateView(view) {
+            this.state.view = view;
+            this.updateCurrentListingItems();
+        }
+
+        updateItemsOnPage(itemsOnPage) {
+            this.state.itemsPerPage = itemsOnPage;
+            this.state.page = 0;
+            this.updateCurrentListingItems();
         }
 
         updateFilterListingItems(filter) {
@@ -249,7 +262,7 @@ $(document).ready(() => {
             const listingComponents = [];
 
             this.state.currentListingItems.forEach((listingItem) => {
-                const listingComponent = new ListingItemComponent(listingItem);
+                const listingComponent = new ListingItemComponent(listingItem, this.state.view);
                 this.dataElement.append(...listingComponent.render());
                 listingComponents.push(listingComponent);
             });

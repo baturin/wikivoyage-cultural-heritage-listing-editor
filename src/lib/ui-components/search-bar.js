@@ -5,8 +5,10 @@ import { culturalMonumentStyles } from "../cultural-monument-styles";
 import { culturalMonumentProtections } from "../cultural-monument-protections";
 
 export class SearchBar {
-    constructor(onUpdate) {
+    constructor(onUpdate, onUpdateItemsOnPage, onUpdateView) {
         this._onUpdate = onUpdate;
+        this._onUpdateItemsOnPage = onUpdateItemsOnPage;
+        this._onUpdateView = onUpdateView;
 
         this._initComponents();
     }
@@ -16,7 +18,46 @@ export class SearchBar {
     }
 
     _initComponents() {
-        this._searchBar = $('<div style="padding: 10px; background-color: #f8f9fa; border: 1px solid #a2a9b1">');
+        this._searchBar = $('<div style="padding: 10px; background-color: #f8f9fa; border: 1px solid #a2a9b1;">');
+
+        this._inputItemsOnPage = ListingItemFormComposer.createSelector([
+            {
+                title: '10',
+                value: 10
+            },
+            {
+                title: '50',
+                value: 50
+            },
+            {
+                title: '100',
+                value: 100
+            },
+            {
+                title: '250',
+                value: 250
+            },
+            {
+                title: '500',
+                value: 500
+            },
+            {
+                title: 'все',
+                value: 0
+            }
+        ]).css('width', '50px');
+
+
+        this._inputView = ListingItemFormComposer.createSelector([
+            {
+                title: 'полный',
+                value: SearchConstants.VIEW_FULL
+            },
+            {
+                title: 'компактный',
+                value: SearchConstants.VIEW_COMPACT
+            }
+        ]).css('width', '120px');
 
         this._inputSearchDescription = ListingItemFormComposer.createTextInput();
 
@@ -93,13 +134,31 @@ export class SearchBar {
 
         this._searchBar
             .append(
-                $('<div>')
-                    .append(
-                        $('<b>').text('Фильтры')
+                $('<div style="display: flex; justify-content: space-between;">')
+                .append(
+                    $('<div>')
+                        .append(
+                            $('<b>').text('Фильтры')
+                        )
+                        .append('&nbsp;')
+                        .append(this._hideLink)
+                        .append(this._showLink)
+                )
+                .append(
+                    $('<div style="display: flex;">')
+                        .append($('<div>')
+                            .append(
+                                $('<b>').text('Вид: ')
+                            )
+                            .append(this._inputView)
+                        )
+                        .append($('<div style="padding-left: 10px;">')
+                            .append(
+                                $('<b>').text('Элементов на странице: ')
+                            )
+                            .append(this._inputItemsOnPage)
+                        )
                     )
-                    .append('&nbsp;')
-                    .append(this._hideLink)
-                    .append(this._showLink)
             );
 
         this._filtersBar = $('<div style="display: none;">');
@@ -167,6 +226,12 @@ export class SearchBar {
         this._inputType.change(() => this._onUpdateSearch());
         this._inputStyle.change(() => this._onUpdateSearch());
         this._inputProtection.change(() => this._onUpdateSearch());
+        this._inputItemsOnPage.change(
+            () => this._onUpdateItemsOnPage(parseInt(this._inputItemsOnPage.val()))
+        );
+        this._inputView.change(
+            () => this._onUpdateView(this._inputView.val())
+        );
     }
 
     _onUpdateSearch() {
@@ -195,7 +260,10 @@ export const SearchConstants = {
     COORDINATES_EXISTS: 'exists',
     COORDINATES_PRECISE: 'precise',
     COORDINATES_NOT_PRECISE: 'not-precise',
-    COORDINATES_NO: 'no'
+    COORDINATES_NO: 'no',
+
+    VIEW_FULL: 'full',
+    VIEW_COMPACT: 'compact',
 };
 
 export class SearchFilter {
