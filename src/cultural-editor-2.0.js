@@ -107,29 +107,33 @@ $(document).ready(() => {
             const api = new MediawikiApi();
 
             const loadPageListings = (page, onSuccess) => {
-                api.getPageText(page).then((text) => {
-                    const listings = [];
+                api.getPageText(
+                    page,
+                    (text) => {
+                        const listings = [];
 
-                    const sectionEditor = new WikitextSectionEditor(text, 'monument');
-                    let listingIndex = 0;
-                    while (true) {
-                        const listingData = sectionEditor.getListingData(listingIndex);
+                        const sectionEditor = new WikitextSectionEditor(text, 'monument');
+                        let listingIndex = 0;
+                        while (true) {
+                            const listingData = sectionEditor.getListingData(listingIndex);
 
-                        if (!listingData) {
-                            break;
+                            if (!listingData) {
+                                break;
+                            }
+
+                            let listingItem = new ListingItem(listingData, page);
+                            listings.push(listingItem);
+
+                            listingIndex++;
                         }
 
-                        let listingItem = new ListingItem(listingData, page);
-                        listings.push(listingItem);
-
-                        listingIndex++;
+                        onSuccess(listings);
+                    },
+                    (reason) => {
+                        window.console.error(reason);
+                        onSuccess([]);
                     }
-
-                    onSuccess(listings);
-                }).catch((reason) => {
-                    window.console.error(reason);
-                    onSuccess([]);
-                });
+                );
             };
 
             AsyncUtils.runSequence(

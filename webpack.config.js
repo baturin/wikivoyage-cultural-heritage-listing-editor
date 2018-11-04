@@ -1,7 +1,8 @@
 module.exports = {
-    mode: 'development',
-    devtool: 'source-map',
-    entry: './src/cultural-editor-2.0.js',
+    mode: 'none',
+    entry: [
+        './src/cultural-editor-2.0.js'
+    ],
     output: {
         filename: 'cultural-editor-2.0.js'
     },
@@ -16,5 +17,20 @@ module.exports = {
             }
         },
         port: 9999
+    },
+    plugins: [],
+    module: {
+      rules: [
+        {
+          test: /\.m?js$/,
+          exclude: /(node_modules|bower_components)/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env']
+            }
+          }
+        }
+      ]
     }
 };
