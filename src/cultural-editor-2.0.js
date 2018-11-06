@@ -8,6 +8,8 @@ import { AsyncUtils } from "./lib/async-utils";
 import { WikivoyageApi } from "./lib/wikivoyage-api";
 import { CulturalEditorListingSerializer} from "./lib/cultural-editor-serializer";
 import { MediaWikiPageWikitext } from "./lib/mediawiki-page-wikitext";
+import {downloadContent} from "./lib/download-content";
+import {ExportPanel} from "./lib/ui-components/export-panel";
 
 /**
  * TODO
@@ -28,7 +30,7 @@ import { MediaWikiPageWikitext } from "./lib/mediawiki-page-wikitext";
  * 11. Edit then go to another page.
  * 12. Save all.
  * 13. Leave warning.
- * 14. Dynamic GPX generation.
+ * 14. Complete GPX, JSON, CSV export.
  */
 
 $(document).ready(() => {
@@ -258,6 +260,40 @@ $(document).ready(() => {
             this.renderData();
         }
 
+        exportJson() {
+            const items = this.state.filterListingItems.map(item => item.data);
+            downloadContent('listings.json', JSON.stringify(items, null, 2));
+        }
+
+        exportGpx() {
+            const items = this.state.filterListingItems.map(item => item.data);
+
+            const header = (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n' +
+                '<gpx version="1.1" creator="Wikivoyage"\n' +
+                    '  xmlns="http://www.topografix.com/GPX/1/1"\n' +
+                    '  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n' +
+                    '  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 '+
+                        'http://www.topografix.com/GPX/1/1/gpx.xsd">\n'
+            );
+            const footer = (
+                '\n</gpx>'
+            );
+            // TODO proper escaping
+            const data = items.filter(item => item.lat && item.long).map(
+                (item) => {
+                    return (
+                        '  <wpt lat="' + item.lat + '" lon="' + item.long + '">\n' +
+                        '    <name>' + item.name + '</name>\n' +
+                        '    <desc>' + item.address + '</desc>\n' +
+                        '  </wpt>'
+                    );
+                }
+            ).join("\n");
+
+            downloadContent('listings.gpx', header + data + footer);
+        }
+
         onSaveListing(page, listingIndex, data, onSuccess) {
             setTimeout(() => {
                 const newListingText = CulturalEditorListingSerializer.serializeListingData(data);
@@ -292,6 +328,12 @@ $(document).ready(() => {
 
         renderData() {
             this.dataElement.empty();
+
+            const exportPanel = new ExportPanel(
+                () => this.exportJson(),
+                () => this.exportGpx()
+            );
+            this.dataElement.append(exportPanel.render());
 
             const topPagination = this.createPagination(false);
             const bottomPagination = this.createPagination(true);
