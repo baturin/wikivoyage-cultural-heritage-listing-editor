@@ -6,23 +6,29 @@ import { ListingItemComponent} from "./lib/ui-components/listing-item";
 import { SearchBar, SearchConstants } from "./lib/ui-components/search-bar";
 import { AsyncUtils } from "./lib/async-utils";
 import { WikivoyageApi } from "./lib/wikivoyage-api";
+import { CulturalEditorListingSerializer} from "./lib/cultural-editor-serializer";
+import { MediaWikiPageWikitext } from "./lib/mediawiki-page-wikitext";
 
 /**
  * TODO
  *
  * TOP:
- * 1. Editor - real save
- * 2. Load images optimization
- * 3. Sort by street, name, category
+ * 1. Sort by street, name, category
  *
- * 1. Integration with listing editor gadget.
- * 2. Integration with missing images gadget.
- * 3. Show loading progress.
- * 5. Complete listing template implementation.
- * 6. Sort: by street, by name, by type/category.
- * 7. Object passport document.
- * 8. Advanced gallery.
- * 9. Better compact view.
+ * 1. Integration with missing images gadget.
+ * 2. Show loading/saving progress.
+ * 3. Complete listing template implementation.
+ * 4. Sort: by street, by name, by type/category.
+ * 5. Object passport document.
+ * 6. Advanced gallery.
+ * 7. Better compact view.
+ * 8. Captcha handling.
+ * 9. XSS.
+ * 10. Listing serializer - as in production.
+ * 11. Edit then go to another page.
+ * 12. Save all.
+ * 13. Leave warning.
+ * 14. Dynamic GPX generation.
  */
 
 $(document).ready(() => {
@@ -83,9 +89,10 @@ $(document).ready(() => {
     }
 
     class ListingItem {
-        constructor(data, page) {
+        constructor(data, page, index) {
             this.data = data;
             this.page = page;
+            this.index = index;
         }
     }
 
@@ -119,7 +126,7 @@ $(document).ready(() => {
                                 break;
                             }
 
-                            let listingItem = new ListingItem(listingData, page);
+                            let listingItem = new ListingItem(listingData, page, listingIndex);
                             listings.push(listingItem);
 
                             listingIndex++;
@@ -251,6 +258,38 @@ $(document).ready(() => {
             this.renderData();
         }
 
+        onSaveListing(page, listingIndex, data, onSuccess) {
+            setTimeout(() => {
+                const newListingText = CulturalEditorListingSerializer.serializeListingData(data);
+
+                const api = new MediawikiApi();
+                api.getPageText(
+                    page,
+                    (text) => {
+                        const sectionEditor = new WikitextSectionEditor(text, 'monument');
+                        const newPageText = sectionEditor.getSectionTextWithReplacedListing(
+                            listingIndex, newListingText
+                        );
+
+                        MediaWikiPageWikitext.saveSectionWikitext(
+                            null, newPageText, "Updated listing", false,
+                            null, null,
+                            () => {
+                                onSuccess();
+                            },
+                            () => {
+                                alert('Failed to save listing');
+                            },
+                            () => {
+                                alert('Captcha request');
+                            },
+                            page
+                        );
+                    }
+                );
+            }, 3000);
+        }
+
         renderData() {
             this.dataElement.empty();
 
@@ -262,7 +301,11 @@ $(document).ready(() => {
             const listingComponents = [];
 
             this.state.currentListingItems.forEach((listingItem) => {
-                const listingComponent = new ListingItemComponent(listingItem, this.state.view);
+                const listingComponent = new ListingItemComponent(
+                    listingItem,
+                    this.state.view,
+                    this.onSaveListing
+                );
                 this.dataElement.append(...listingComponent.render());
                 listingComponents.push(listingComponent);
             });

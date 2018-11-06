@@ -1,7 +1,7 @@
 
-let ArrayUtils = require('./array-utils');
+import { ArrayUtils } from './array-utils';
 
-class ListingSerializer {
+export class ListingSerializer {
     constructor(listingType, listingData) {
         this._listingType = listingType;
         this._listingData = listingData;
@@ -69,5 +69,3 @@ class ListingSerializer {
         return this._serializedListing;
     }
 }
-
-module.exports = ListingSerializer;

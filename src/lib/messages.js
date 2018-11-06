@@ -1,5 +1,5 @@
 
-let commonMessages = {
+export const commonMessages = {
     addTitle: 'Добавить объект',
     editTitle: 'Редактировать объект',
     submitApiError: 'Во время сохранения листинга на сервере произошла ошибка, пожайлуста, попробуйте сохранить ещё раз',
@@ -13,5 +13,3 @@ let commonMessages = {
     captchaSubmit: 'Продолжить',
     captchaCancel: 'Отмена',
 };
-
-module.exports = commonMessages;

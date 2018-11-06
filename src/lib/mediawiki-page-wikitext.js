@@ -1,9 +1,9 @@
 
-import commonMessages from './messages';
+import { commonMessages } from './messages';
 
 let api = new mw.Api();
 
-let MediaWikiPageWikitext = {
+export const MediaWikiPageWikitext = {
     loadSectionWikitext(sectionIndex, onSuccess) {
         $.ajax({
             url: mw.util.wikiScript(''),
@@ -24,17 +24,25 @@ let MediaWikiPageWikitext = {
         sectionIndex, sectionWikitext,
         changesSummary, changesIsMinor,
         captchaId, captchaAnswer,
-        onSuccess, onFailure, onCaptcha
+        onSuccess, onFailure, onCaptcha,
+        pageName
     ) {
+        if (!pageName) {
+            pageName = mw.config.get( "wgPageName" );
+        }
         let editPayload = {
             action: "edit",
-            title: mw.config.get( "wgPageName" ),
-            section: sectionIndex,
+            title: pageName,
             text: sectionWikitext,
             summary: changesSummary,
             captchaid: captchaId,
             captchaword: captchaAnswer
         };
+
+        if (sectionIndex !== null) {
+            $.extend(editPayload, { section: sectionIndex });
+        }
+
         if (changesIsMinor) {
             $.extend(editPayload, { minor: 'true' });
         }
@@ -71,5 +79,3 @@ let MediaWikiPageWikitext = {
         return (result !== null) ? result[1].trim() : "";
     }
 };
-
-module.exports = MediaWikiPageWikitext;

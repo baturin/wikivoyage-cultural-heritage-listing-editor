@@ -1,5 +1,5 @@
 
-let ArrayUtils = {
+export const ArrayUtils = {
     hasElement(array, element) {
         return array.indexOf(element) >= 0;
     },
@@ -8,6 +8,3 @@ let ArrayUtils = {
         return this.hasElement(array, element);
     }
 };
-
-module.exports = ArrayUtils;
-

@@ -8,10 +8,11 @@ import { ListingItemFormComposer } from "./listing-item-form-composer";
 import {SearchConstants} from "./search-bar";
 
 export class ListingItemComponent {
-    constructor(listingItem, view) {
+    constructor(listingItem, view, onSaveListing) {
         this.view = view;
         this.listingItem = listingItem;
         this.listingItemContainer = $('<div>');
+        this.onSaveListing = onSaveListing;
     }
 
     render() {
@@ -266,10 +267,19 @@ export class ListingItemComponent {
             this.listingItemContainer.append(this.renderView());
         });
         buttonSave.click(() => {
-            this.listingItem.data = getValues();
+            const values = getValues();
+            const onSaveSuccessful = () => {
+                this.listingItem.data = values;
 
-            this.listingItemContainer.empty();
-            this.listingItemContainer.append(this.renderView());
+                this.listingItemContainer.empty();
+                this.listingItemContainer.append(this.renderView());
+            };
+
+            if (this.onSaveListing) {
+                this.onSaveListing(this.listingItem.page, this.listingItem.index, values, onSaveSuccessful);
+            } else {
+                onSaveSuccessful();
+            }
         });
 
         dataCell.append(buttonsBlock);
