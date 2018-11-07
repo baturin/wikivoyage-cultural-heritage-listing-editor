@@ -294,35 +294,33 @@ $(document).ready(() => {
         }
 
         onSaveListing(page, listingIndex, data, onSuccess) {
-            setTimeout(() => {
-                const newListingText = CulturalEditorListingSerializer.serializeListingData(data);
+            const newListingText = CulturalEditorListingSerializer.serializeListingData(data);
 
-                const api = new MediawikiApi();
-                api.getPageText(
-                    page,
-                    (text) => {
-                        const sectionEditor = new WikitextSectionEditor(text, 'monument');
-                        const newPageText = sectionEditor.getSectionTextWithReplacedListing(
-                            listingIndex, newListingText
-                        );
+            const api = new MediawikiApi();
+            api.getPageText(
+                page,
+                (text) => {
+                    const sectionEditor = new WikitextSectionEditor(text, 'monument');
+                    const newPageText = sectionEditor.getSectionTextWithReplacedListing(
+                        listingIndex, newListingText
+                    );
 
-                        MediaWikiPageWikitext.saveSectionWikitext(
-                            null, newPageText, "Updated listing", false,
-                            null, null,
-                            () => {
-                                onSuccess();
-                            },
-                            () => {
-                                alert('Failed to save listing');
-                            },
-                            () => {
-                                alert('Captcha request');
-                            },
-                            page
-                        );
-                    }
-                );
-            }, 3000);
+                    MediaWikiPageWikitext.saveSectionWikitext(
+                        null, newPageText, "Updated listing", false,
+                        null, null,
+                        () => {
+                            onSuccess();
+                        },
+                        () => {
+                            alert('Failed to save listing');
+                        },
+                        () => {
+                            alert('Captcha request');
+                        },
+                        page
+                    );
+                }
+            );
         }
 
         renderData() {
