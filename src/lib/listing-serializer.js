@@ -1,5 +1,6 @@
 
 import { ArrayUtils } from './array-utils';
+import { StringUtils } from "./string-utils";
 
 export class ListingSerializer {
     constructor(listingType, listingData) {
@@ -12,53 +13,56 @@ export class ListingSerializer {
     writeListingStart(addNewline) {
         this._serializedListing += '{{' + this._listingType;
         if (addNewline) {
-            this._serializedListing += "\n";
+            this._serializedListing += '\n';
         } else {
             this._serializedListing += ' ';
         }
     }
 
-    writeParameterLine(parameterName, optional) {
-        let parameterValue = this._listingData[parameterName];
-        if (optional && (parameterValue === '' || parameterValue === undefined)) {
+    writeParameterLine(parameterName, isOptional) {
+        const parameterValue = this._getParameterValue(parameterName);
+        if (isOptional && parameterValue === '') {
             return;
         }
-        if (parameterValue === undefined) {
-            parameterValue = '';
-        }
-        this._serializedListing += '|' + parameterName + "=" + parameterValue + "\n";
+        this._serializedListing += ListingSerializer._parameterString(parameterName, parameterValue, true);
         this._serializedParameters.push(parameterName);
     }
 
-    writeParametersLine(parameterNames) {
-        for (let i = 0; i < parameterNames.length; i++) {
-            let parameterName = parameterNames[i];
-            let parameterValue = this._listingData[parameterName];
-            if (parameterValue === undefined) {
-                parameterValue = '';
+    writeParametersLine(parameterNames, optionalParameters) {
+        let isFirst = true;
+
+        parameterNames.forEach((parameterName) => {
+            const parameterValue = this._getParameterValue(parameterName);
+
+            const isOptional = optionalParameters && ArrayUtils.inArray(parameterName, optionalParameters);
+            if (isOptional && parameterValue === '') {
+                return;
             }
-            if (i > 0) {
-                this._serializedListing += " ";
+
+            if (!isFirst) {
+                this._serializedListing += ' ';
             }
-            this._serializedListing += "|" + parameterName + "=" + parameterValue;
+
+            this._serializedListing += ListingSerializer._parameterString(parameterName, parameterValue, false);
             this._serializedParameters.push(parameterName);
+
+            isFirst = false;
+        });
+
+        if (!isFirst) {
+            this._serializedListing += '\n';
         }
-        this._serializedListing += "\n";
     }
 
     writeOtherNonEmptyParameters() {
-        for (let parameterName in this._listingData) {
-            if (!this._listingData.hasOwnProperty(parameterName)) {
-                continue;
+        const allParameterNames = Object.keys(this._listingData);
+        const otherParameterNames = ArrayUtils.diff(allParameterNames, this._serializedParameters);
+        otherParameterNames.forEach((parameterName) => {
+            const parameterValue = this._getParameterValue(parameterName);
+            if (parameterValue !== '') {
+                this._serializedListing += ListingSerializer._parameterString(parameterName, parameterValue, true)
             }
-
-            if (!ArrayUtils.hasElement(this._serializedParameters, parameterName)) {
-                let parameterValue = this._listingData[parameterName];
-                if (parameterValue !== '' && parameterValue !== undefined) {
-                    this._serializedListing += '|' + parameterName + "=" + parameterValue + "\n"
-                }
-            }
-        }
+        });
     }
 
     writeListingEnd() {
@@ -67,5 +71,17 @@ export class ListingSerializer {
 
     getSerializedListing() {
         return this._serializedListing;
+    }
+
+    _getParameterValue(parameterName) {
+        return StringUtils.emptyToString(this._listingData[parameterName]);
+    }
+
+    static _parameterString(parameterName, parameterValue, addNewline) {
+        let result = '|' + parameterName + '= ' + parameterValue;
+        if (addNewline) {
+            result += '\n';
+        }
+        return result;
     }
 }

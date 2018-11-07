@@ -1,5 +1,6 @@
 let assert = require('assert');
-let WikitextParser = require('../src/lib/wikitext-parser');
+
+import { WikitextParser } from '../src/lib/wikitext-parser';
 
 describe('WikitextParser', function() {
     it("find the first listing text", function() {

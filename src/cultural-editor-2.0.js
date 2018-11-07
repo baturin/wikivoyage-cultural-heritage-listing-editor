@@ -8,8 +8,8 @@ import { AsyncUtils } from "./lib/async-utils";
 import { WikivoyageApi } from "./lib/wikivoyage-api";
 import { CulturalEditorListingSerializer} from "./lib/cultural-editor-serializer";
 import { MediaWikiPageWikitext } from "./lib/mediawiki-page-wikitext";
-import {downloadContent} from "./lib/download-content";
-import {ExportPanel} from "./lib/ui-components/export-panel";
+import { downloadContent } from "./lib/download-content";
+import { ExportPanel } from "./lib/ui-components/export-panel";
 
 /**
  * TODO
@@ -26,11 +26,10 @@ import {ExportPanel} from "./lib/ui-components/export-panel";
  * 7. Better compact view.
  * 8. Captcha handling.
  * 9. XSS.
- * 10. Listing serializer - as in production.
- * 11. Edit then go to another page.
- * 12. Save all.
- * 13. Leave warning.
- * 14. Complete GPX, JSON, CSV export.
+ * 10. Edit then go to another page.
+ * 11. Save all.
+ * 12. Leave warning.
+ * 13. Complete GPX, JSON, CSV export.
  */
 
 $(document).ready(() => {

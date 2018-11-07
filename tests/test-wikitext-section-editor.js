@@ -1,5 +1,6 @@
 let assert = require('assert');
-let WikitextSectionEditor = require('../src/lib/wikitext-section-editor');
+
+import { WikitextSectionEditor } from '../src/lib/wikitext-section-editor';
 
 describe('WikitextSectionEditor', function() {
     it("get listing data", function() {

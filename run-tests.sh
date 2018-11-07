@@ -1,3 +1,3 @@
 #!/bin/bash
 
-mocha tests
+mocha --require @babel/register tests
