@@ -7,6 +7,8 @@ import { ListingItemIcons } from "./listing-item-icons";
 import { ListingItemFormComposer } from "./listing-item-form-composer";
 import {SearchConstants} from "./search-bar";
 import {ChangesDescription} from "../changes-description";
+import {StringUtils} from "../string-utils";
+import {ArrayUtils} from "../array-utils";
 
 export class ListingItemComponent {
     constructor(listingItem, view, onSaveListing) {
@@ -121,6 +123,36 @@ export class ListingItemComponent {
         const inputKnidNew = ListingItemFormComposer.createTextInput(15);
 
         const inputDescription = ListingItemFormComposer.createTextarea();
+
+        const allInputs = [
+            inputName,
+            inputType,
+            inputRegion,
+            inputDistrict,
+            inputMunicipality,
+            inputBlock,
+            inputAddress,
+            inputLat,
+            inputLong,
+            inputYear,
+            inputAuthor,
+            inputKnid,
+            inputComplex,
+            inputKnidNew,
+            inputImage,
+            inputWikipedia,
+            inputWikidata,
+            inputCommons,
+            inputMunid,
+            inputDocument,
+            inputLink,
+            inputLinkExtra,
+            inputDescription,
+            inputProtection,
+            inputStyle,
+            inputDestroyed,
+            inputPrecise
+        ];
 
         const directMappingInputs = {
             name: inputName,
@@ -268,6 +300,35 @@ export class ListingItemComponent {
         changesDescriptionRow.css('border-top', '1px dotted gray');
         changesDescriptionRow.css('border-bottom', '1px dotted gray');
         changesDescriptionRow.css('margin-top', '3px');
+
+        let changesChanged = false;
+        inputChanges.change(() => {
+            changesChanged = true;
+        });
+
+        const onValueChange = () => {
+            if (!changesChanged) {
+                const values = getValues();
+                const originalData = this.listingItem.data;
+                const changedItems = [];
+                Object.keys(values).forEach(key => {
+                    if (StringUtils.emptyToString(originalData[key]) !== StringUtils.emptyToString(values[key])) {
+                        changedItems.push(key);
+                    }
+                });
+
+                if (ArrayUtils.consistsOnlyOf(changedItems, ['name'])) {
+                    inputChanges.val('название');
+                } else if (ArrayUtils.consistsOnlyOf(changedItems, ['address'])) {
+                    inputChanges.val('адрес');
+                } else if (ArrayUtils.consistsOnlyOf(changedItems, ['lat', 'long', 'precise'])) {
+                    inputChanges.val('координаты');
+                } else {
+                    inputChanges.val('');
+                }
+            }
+        };
+        allInputs.forEach((input) => input.change(onValueChange));
 
         dataCell.append(changesDescriptionRow);
 
