@@ -339,7 +339,7 @@ $(document).ready(() => {
             downloadContent('listings.gpx', header + data + footer);
         }
 
-        onSaveListing(page, listingIndex, data, onSuccess) {
+        onSaveListing(page, listingIndex, data, changesDescription, onSuccess) {
             const newListingText = CulturalEditorListingSerializer.serializeListingData(data);
 
             const api = new MediawikiApi();
@@ -351,8 +351,14 @@ $(document).ready(() => {
                         listingIndex, newListingText
                     );
 
+                    let changesDescriptionText = 'Обновлен объект "' + data.name + '"';
+                    if (changesDescription.getDescription()) {
+                        changesDescriptionText += ' - ' + changesDescription.getDescription();
+                    }
+
                     MediaWikiPageWikitext.saveSectionWikitext(
-                        null, newPageText, "Updated listing", false,
+                        null, newPageText,
+                        changesDescriptionText, changesDescription.getIsMinor(),
                         null, null,
                         () => {
                             onSuccess();

@@ -6,6 +6,7 @@ import { ValidationUtils } from "../validation-utils";
 import { ListingItemIcons } from "./listing-item-icons";
 import { ListingItemFormComposer } from "./listing-item-form-composer";
 import {SearchConstants} from "./search-bar";
+import {ChangesDescription} from "../changes-description";
 
 export class ListingItemComponent {
     constructor(listingItem, view, onSaveListing) {
@@ -256,6 +257,20 @@ export class ListingItemComponent {
 
         dataCell.append(descriptionRow);
 
+        const inputChanges = ListingItemFormComposer.createTextInputLarge();
+        const inputIsMinor = ListingItemFormComposer.createCheckboxInput();
+
+        const changesDescriptionRow = (
+            ListingItemFormComposer.createFormRow('Описание изменений: ')
+                .append(ListingItemFormComposer.createFormElement(null, inputChanges))
+                .append(ListingItemFormComposer.createFormElement('незначительные?', inputIsMinor))
+        );
+        changesDescriptionRow.css('border-top', '1px dotted gray');
+        changesDescriptionRow.css('border-bottom', '1px dotted gray');
+        changesDescriptionRow.css('margin-top', '3px');
+
+        dataCell.append(changesDescriptionRow);
+
         const buttonsBlock = $('<div>').attr('class', 'ui-dialog-buttonset');
         const buttonDiscard = this.renderButton('Отменить');
         const buttonSave = this.renderButton('Сохранить');
@@ -268,6 +283,7 @@ export class ListingItemComponent {
         });
         buttonSave.click(() => {
             const values = getValues();
+            const changesDescription = new ChangesDescription(inputChanges.val(), inputIsMinor.is(':checked'));
             const onSaveSuccessful = () => {
                 this.listingItem.data = values;
 
@@ -276,7 +292,12 @@ export class ListingItemComponent {
             };
 
             if (this.onSaveListing) {
-                this.onSaveListing(this.listingItem.page, this.listingItem.index, values, onSaveSuccessful);
+                this.onSaveListing(
+                    this.listingItem.page, this.listingItem.index,
+                    values, changesDescription,
+                    onSaveSuccessful
+                )
+                ;
             } else {
                 onSaveSuccessful();
             }
