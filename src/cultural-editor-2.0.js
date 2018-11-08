@@ -3,33 +3,31 @@ import { MediawikiApi } from "./lib/mediawiki-api";
 import { WikitextSectionEditor } from './lib/wikitext-section-editor';
 import { PaginationComponent } from "./lib/ui-components/pagination";
 import { ListingItemComponent} from "./lib/ui-components/listing-item";
-import { SearchBar, SearchConstants } from "./lib/ui-components/search-bar";
+import {SearchBar, SearchConstants, SearchFilter, SortConstants} from "./lib/ui-components/search-bar";
 import { AsyncUtils } from "./lib/async-utils";
 import { WikivoyageApi } from "./lib/wikivoyage-api";
 import { CulturalEditorListingSerializer} from "./lib/cultural-editor-serializer";
 import { MediaWikiPageWikitext } from "./lib/mediawiki-page-wikitext";
 import { downloadContent } from "./lib/download-content";
 import { ExportPanel } from "./lib/ui-components/export-panel";
+import {ArrayUtils} from "./lib/array-utils";
 
 /**
  * TODO
  *
- * TOP:
- * 1. Sort by street, name, category
- *
  * 1. Integration with missing images gadget.
  * 2. Show loading/saving progress.
  * 3. Complete listing template implementation.
- * 4. Sort: by street, by name, by type/category.
- * 5. Object passport document.
- * 6. Advanced gallery.
- * 7. Better compact view.
- * 8. Captcha handling.
- * 9. XSS.
- * 10. Edit then go to another page.
- * 11. Save all.
- * 12. Leave warning.
- * 13. Complete GPX, JSON, CSV export.
+ * 4. Object passport document.
+ * 5. Advanced gallery.
+ * 6. Better compact view.
+ * 7. Captcha handling.
+ * 8. XSS.
+ * 9. Edit then go to another page.
+ * 10. Save all.
+ * 11. Leave warning.
+ * 12. Complete GPX, JSON, CSV export.
+ * 13. Map.
  */
 
 $(document).ready(() => {
@@ -86,6 +84,9 @@ $(document).ready(() => {
             this.page = 0;
             this.itemsPerPage = 10;
             this.view = SearchConstants.VIEW_FULL;
+
+            this.sortBy = SortConstants.DEFAULT;
+            this.filter = new SearchFilter('', '', SearchConstants.PHOTO_ANY, SearchConstants.COORDINATES_ANY, '', '', '');
         }
     }
 
@@ -104,7 +105,8 @@ $(document).ready(() => {
             this.searchBar = new SearchBar(
                 (filter) => this.updateFilterListingItems(filter),
                 (itemsOnPage) => this.updateItemsOnPage(itemsOnPage),
-                (view) => this.updateView(view)
+                (view) => this.updateView(view),
+                (sortBy) => this.updateSort(sortBy)
             );
             this.dataElement = $('<div>');
         }
@@ -184,7 +186,55 @@ $(document).ready(() => {
             this.updateCurrentListingItems();
         }
 
+        updateSort(sortBy) {
+            this.state.sortBy = sortBy;
+
+            this.updateFilteredSortedListingItems();
+            this.updateCurrentListingItems();
+        }
+
+
         updateFilterListingItems(filter) {
+            this.state.filter = filter;
+
+            this.state.page = 0;
+
+            this.updateFilteredSortedListingItems();
+            this.updateCurrentListingItems();
+        }
+
+        updateFilteredSortedListingItems() {
+            this.state.filterListingItems =
+                this.applySort(
+                    this.applyFilter(
+                        this.state.allListingItems,
+                        this.state.filter
+                    ),
+                    this.state.sortBy
+                );
+        }
+
+        applySort(items, sortBy) {
+            const sortedItems = items.concat();
+
+            if (ArrayUtils.inArray(sortBy, [SortConstants.NAME, SortConstants.ADDRESS, SortConstants.TYPE])) {
+                sortedItems.sort(
+                    (item1, item2) => {
+                        if (sortBy === SortConstants.NAME) {
+                            return item1.data.name.localeCompare(item2.data.name);
+                        } else if (sortBy === SortConstants.ADDRESS) {
+                            return item1.data.address.localeCompare(item2.data.address);
+                        } else if (sortBy === SortConstants.TYPE) {
+                            return item1.data.type.localeCompare(item2.data.type);
+                        }
+                    }
+                );
+            }
+
+            return sortedItems;
+        }
+
+        applyFilter(items, filter) {
             const searchDescription = filter.getSearchDescription().toLowerCase();
             const searchAddress = filter.getSearchAddress().toLowerCase();
             const photo = filter.getPhoto();
@@ -193,7 +243,7 @@ $(document).ready(() => {
             const style = filter.getStyle();
             const protection = filter.getProtection();
 
-            this.state.filterListingItems = this.state.allListingItems.filter(
+            return items.filter(
                 (item) => (
                     (
                         searchDescription === '' ||
@@ -244,10 +294,6 @@ $(document).ready(() => {
                     )
                 )
             );
-
-            this.state.page = 0;
-
-            this.updateCurrentListingItems();
         }
 
         render() {
@@ -370,18 +416,6 @@ $(document).ready(() => {
             );
 
             this.dataElement.append(...bottomPagination.render());
-        }
-
-        createSearchBar() {
-            const input = $('<input type="text">');
-            const bar = $('<div>');
-            input.keyup(() => {
-                const filterValue = input.val();
-                this.updateFilterListingItems(filterValue);
-            });
-            bar.append('Поиск: ');
-            bar.append(input);
-            return bar;
         }
 
         createPagination(scrollToTop) {

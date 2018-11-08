@@ -5,10 +5,11 @@ import { culturalMonumentStyles } from "../cultural-monument-styles";
 import { culturalMonumentProtections } from "../cultural-monument-protections";
 
 export class SearchBar {
-    constructor(onUpdate, onUpdateItemsOnPage, onUpdateView) {
+    constructor(onUpdate, onUpdateItemsOnPage, onUpdateView, onUpdateSort) {
         this._onUpdate = onUpdate;
         this._onUpdateItemsOnPage = onUpdateItemsOnPage;
         this._onUpdateView = onUpdateView;
+        this._onUpdateSort = onUpdateSort;
 
         this._initComponents();
     }
@@ -19,6 +20,25 @@ export class SearchBar {
 
     _initComponents() {
         this._searchBar = $('<div style="padding: 10px; background-color: #f8f9fa; border: 1px solid #a2a9b1;">');
+
+        this._inputSort = ListingItemFormComposer.createSelector([
+            {
+                title: 'По-умолчанию',
+                value: SortConstants.DEFAULT,
+            },
+            {
+                title: 'По названию',
+                value: SortConstants.NAME,
+            },
+            {
+                title: 'По адресу',
+                value: SortConstants.ADDRESS,
+            },
+            {
+                title: 'По типу',
+                value: SortConstants.TYPE
+            }
+        ]);
 
         this._inputItemsOnPage = ListingItemFormComposer.createSelector([
             {
@@ -148,6 +168,12 @@ export class SearchBar {
                     $('<div style="display: flex;">')
                         .append($('<div>')
                             .append(
+                                $('<b>').text('Упорядочить: ')
+                            )
+                            .append(this._inputSort)
+                        )
+                        .append($('<div style="padding-left: 10px;">')
+                            .append(
                                 $('<b>').text('Вид: ')
                             )
                             .append(this._inputView)
@@ -232,6 +258,9 @@ export class SearchBar {
         this._inputView.change(
             () => this._onUpdateView(this._inputView.val())
         );
+        this._inputSort.change(
+            () => this._onUpdateSort(this._inputSort.val())
+        );
     }
 
     _onUpdateSearch() {
@@ -264,6 +293,13 @@ export const SearchConstants = {
 
     VIEW_FULL: 'full',
     VIEW_COMPACT: 'compact',
+};
+
+export const SortConstants = {
+    DEFAULT: 'default',
+    NAME: 'name',
+    ADDRESS: 'address',
+    TYPE: 'type'
 };
 
 export class SearchFilter {
