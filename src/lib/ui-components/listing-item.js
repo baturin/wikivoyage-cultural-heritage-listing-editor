@@ -5,17 +5,18 @@ import { regions } from "../regions";
 import { ValidationUtils } from "../validation-utils";
 import { ListingItemIcons } from "./listing-item-icons";
 import { ListingItemFormComposer } from "./listing-item-form-composer";
-import {SearchConstants} from "./search-bar";
-import {ChangesDescription} from "../changes-description";
-import {StringUtils} from "../string-utils";
-import {ArrayUtils} from "../array-utils";
+import { SearchConstants } from "./search-bar";
+import { ChangesDescription } from "../changes-description";
+import { StringUtils } from "../string-utils";
+import { ArrayUtils } from "../array-utils";
 
 export class ListingItemComponent {
-    constructor(listingItem, view, onSaveListing) {
+    constructor(listingItem, view, onSaveListing, onLoadGallery) {
         this.view = view;
         this.listingItem = listingItem;
         this.listingItemContainer = $('<div>');
         this.onSaveListing = onSaveListing;
+        this.onLoadGallery = onLoadGallery;
     }
 
     render() {
@@ -414,10 +415,53 @@ export class ListingItemComponent {
         }
     }
 
+    renderGalleryRow() {
+        this.galleryContents = $('<td colspan="2">');
+        this.onGalleryUpdated();
+        return $('<tr style="display: none;">').append(this.galleryContents);
+    }
+
+    onGalleryUpdated() {
+        if (!this.galleryContents) {
+            return;
+        }
+
+        this.galleryContents.empty();
+
+        if (!this.listingItem.galleryImages) {
+            this.galleryContents.text('загрузка...');
+        } else {
+            const contentsDiv = $('<div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center">');
+            this.galleryContents.append(contentsDiv);
+
+            this.listingItem.galleryImages.forEach((image) => {
+                const imageElement = $('<img>').attr('src', image.thumb);
+                contentsDiv.append($('<div style="padding: 10px;">').append(imageElement));
+            });
+        }
+    }
+
     renderImageCell() {
         const imageCell = $('<td width="160px;">');
         this.image = this.renderImage();
         imageCell.append(this.image);
+
+        const galleryLink = $('<a>').text('галерея');
+        galleryLink.click(() => {
+            if (!this.listingItem.galleryImages) {
+                this.onLoadGallery(this.listingItem, () => {
+                    this.onGalleryUpdated();
+                });
+            }
+
+            this.galleryRow.toggle();
+        });
+
+        imageCell.append(
+            $('<div style="text-align: center;">').append(
+                galleryLink
+            )
+        );
         return imageCell;
     }
 
@@ -645,6 +689,9 @@ export class ListingItemComponent {
         // TODO documents
 
         listingRow.append(this.renderUpload());
+
+        this.galleryRow = this.renderGalleryRow();
+        listingTable.append(this.galleryRow);
 
         return listingTable;
     }

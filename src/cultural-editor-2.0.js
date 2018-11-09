@@ -10,7 +10,8 @@ import { CulturalEditorListingSerializer} from "./lib/cultural-editor-serializer
 import { MediaWikiPageWikitext } from "./lib/mediawiki-page-wikitext";
 import { downloadContent } from "./lib/download-content";
 import { ExportPanel } from "./lib/ui-components/export-panel";
-import {ArrayUtils} from "./lib/array-utils";
+import { ArrayUtils } from "./lib/array-utils";
+import {CommonsApi} from "./lib/commons-api";
 
 /**
  * TODO
@@ -375,6 +376,19 @@ $(document).ready(() => {
             );
         }
 
+        onLoadGallery(listingItem, onSuccess) {
+            CommonsApi.getCategoryImages(
+                'WLM/' + listingItem.data.knid,
+                'max',
+                (images) => {
+                    CommonsApi.getImagesInfo(images, (imageInfos) => {
+                        listingItem.galleryImages = imageInfos;
+                        onSuccess();
+                    })
+                }
+            );
+        }
+
         renderData() {
             this.dataElement.empty();
 
@@ -395,7 +409,8 @@ $(document).ready(() => {
                 const listingComponent = new ListingItemComponent(
                     listingItem,
                     this.state.view,
-                    this.onSaveListing
+                    this.onSaveListing,
+                    this.onLoadGallery,
                 );
                 this.dataElement.append(...listingComponent.render());
                 listingComponents.push(listingComponent);
