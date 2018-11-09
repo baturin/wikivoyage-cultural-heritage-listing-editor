@@ -415,6 +415,17 @@ export class ListingItemComponent {
         }
     }
 
+    onUpdateImageCount() {
+        if (!this.galleryLink) {
+            return;
+        }
+
+        if (this.listingItem.imagesCount > 0) {
+            this.galleryLink.show();
+            this.galleryLink.text('смотреть фото (' + this.listingItem.imagesCount + ')');
+        }
+    }
+
     renderGalleryRow() {
         this.galleryContents = $('<td colspan="2">');
         this.onGalleryUpdated();
@@ -446,8 +457,8 @@ export class ListingItemComponent {
         this.image = this.renderImage();
         imageCell.append(this.image);
 
-        const galleryLink = $('<a>').text('галерея');
-        galleryLink.click(() => {
+        this.galleryLink = $('<a style="display: none;">').text('галерея');
+        this.galleryLink.click(() => {
             if (!this.listingItem.galleryImages) {
                 this.onLoadGallery(this.listingItem, () => {
                     this.onGalleryUpdated();
@@ -459,7 +470,7 @@ export class ListingItemComponent {
 
         imageCell.append(
             $('<div style="text-align: center;">').append(
-                galleryLink
+                this.galleryLink
             )
         );
         return imageCell;

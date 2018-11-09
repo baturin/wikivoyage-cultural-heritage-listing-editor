@@ -3,7 +3,7 @@ import { MediawikiApi } from "./lib/mediawiki-api";
 import { WikitextSectionEditor } from './lib/wikitext-section-editor';
 import { PaginationComponent } from "./lib/ui-components/pagination";
 import { ListingItemComponent} from "./lib/ui-components/listing-item";
-import {SearchBar, SearchConstants, SearchFilter, SortConstants} from "./lib/ui-components/search-bar";
+import { SearchBar, SearchConstants, SearchFilter, SortConstants } from "./lib/ui-components/search-bar";
 import { AsyncUtils } from "./lib/async-utils";
 import { WikivoyageApi } from "./lib/wikivoyage-api";
 import { CulturalEditorListingSerializer} from "./lib/cultural-editor-serializer";
@@ -434,6 +434,20 @@ $(document).ready(() => {
                         }
                     }
                 )
+            );
+
+            CommonsApi.countCategoriesFiles(
+                this.state.currentListingItems.map((item) => 'Category:WLM/' + item.data.knid),
+                (categoriesWithImages) => {
+                    let filesCountByCategory = {};
+                    categoriesWithImages.forEach((item) => { filesCountByCategory[item.category] = item.files });
+
+                    listingComponents.forEach((listingComponent) => {
+                        const filesCount = filesCountByCategory['Category:WLM/' + listingComponent.listingItem.data.knid];
+                        listingComponent.listingItem.imagesCount = filesCount !== undefined ? filesCount : 0;
+                        listingComponent.onUpdateImageCount();
+                    });
+                }
             );
 
             this.dataElement.append(...bottomPagination.render());
