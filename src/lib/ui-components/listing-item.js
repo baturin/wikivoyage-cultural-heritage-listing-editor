@@ -426,30 +426,8 @@ export class ListingItemComponent {
         }
     }
 
-    renderGalleryRow() {
-        this.galleryContents = $('<td colspan="2">');
-        this.onGalleryUpdated();
-        return $('<tr style="display: none;">').append(this.galleryContents);
-    }
-
     onGalleryUpdated() {
-        if (!this.galleryContents) {
-            return;
-        }
-
-        this.galleryContents.empty();
-
-        if (!this.listingItem.galleryImages) {
-            this.galleryContents.text('загрузка...');
-        } else {
-            const contentsDiv = $('<div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center">');
-            this.galleryContents.append(contentsDiv);
-
-            this.listingItem.galleryImages.forEach((image) => {
-                const imageElement = $('<img>').attr('src', image.thumb);
-                contentsDiv.append($('<div style="padding: 10px;">').append(imageElement));
-            });
-        }
+        this.galleryRow.setGalleryImages(this.listingItem.galleryImages);
     }
 
     renderImageCell() {
@@ -701,8 +679,8 @@ export class ListingItemComponent {
 
         listingRow.append(this.renderUpload());
 
-        this.galleryRow = this.renderGalleryRow();
-        listingTable.append(this.galleryRow);
+        this.galleryRow = new GalleryRowComponent();
+        listingTable.append(this.galleryRow.render());
 
         return listingTable;
     }
@@ -737,5 +715,82 @@ export class ListingItemComponent {
         };
         // TODO check how URL encoding works with spaces
         return 'http://commons.wikimedia.org/w/index.php?' + $.param(params);
+    }
+}
+
+class GalleryRowComponent {
+    render() {
+        this._galleryContents = $('<td colspan="2">');
+        this._galleryComponent = new GalleryComponent(this._galleryContents);
+        this._galleryComponent.render();
+        this._galleryRow = $('<tr style="display: none;">').append(this._galleryContents);
+
+        return this._galleryRow;
+    }
+
+    toggle() {
+        this._galleryRow.toggle();
+    }
+
+    setGalleryImages(galleryImages) {
+        this._galleryComponent.setGalleryImages(galleryImages);
+    }
+}
+
+class GalleryComponent {
+    constructor(container) {
+        this._galleryImages = null;
+        this._container = container;
+    }
+
+    setGalleryImages(galleryImages) {
+        this._galleryImages = galleryImages;
+        this.render();
+    }
+
+    render() {
+        if (!this._container) {
+            return;
+        }
+
+        this._container.empty();
+        this._renderGallery();
+    }
+
+    _renderGallery() {
+        if (!this._galleryImages) {
+            this._container.text('загрузка...');
+        } else {
+            if (this._galleryImages.hasWlmImages()) {
+                this._container.append(
+                    this._renderGallerySection(
+                        'Фотографии Wiki Loves Monuments',
+                        this._galleryImages.getWlmImages()
+                    )
+                );
+            }
+            if (this._galleryImages.hasCommonsImages()) {
+                this._container.append(
+                    this._renderGallerySection(
+                        'Фотографии из категории Commons',
+                        this._galleryImages.getCommonsImages()
+                    )
+                )
+            }
+        }
+    }
+
+    _renderGallerySection(title, images) {
+        const headerDiv = $('<div style="width: 100%; text-align: center; font-weight: bold;">').text(title);
+
+        const imagesDiv = $('<div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center">');
+        images.forEach((image) => {
+            const imageElement = $('<img>').attr('src', image.thumb);
+            imagesDiv.append($('<div style="padding: 10px;">').append(imageElement));
+        });
+
+        return $('<div>')
+            .append(headerDiv)
+            .append(imagesDiv);
     }
 }

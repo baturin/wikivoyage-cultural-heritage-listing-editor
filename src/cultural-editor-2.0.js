@@ -12,6 +12,9 @@ import { downloadContent } from "./lib/download-content";
 import { ExportPanel } from "./lib/ui-components/export-panel";
 import { ArrayUtils } from "./lib/array-utils";
 import {CommonsApi} from "./lib/commons-api";
+import {StringUtils} from "./lib/string-utils";
+import {CommonsImagesLoader} from "./lib/commons-images-loader";
+import {CulturalGalleryImages} from "./lib/cultural-gallery-images";
 
 /**
  * TODO
@@ -377,14 +380,18 @@ $(document).ready(() => {
         }
 
         onLoadGallery(listingItem, onSuccess) {
-            CommonsApi.getCategoryImages(
-                'WLM/' + listingItem.data.knid,
-                'max',
-                (images) => {
-                    CommonsApi.getImagesInfo(images, (imageInfos) => {
-                        listingItem.galleryImages = imageInfos;
-                        onSuccess();
-                    })
+            CommonsImagesLoader.loadImagesFromWLMCategory(
+                listingItem.data.knid,
+                (wlmImages) => {
+                    CommonsImagesLoader.loadImagesFromCommonsCategory(
+                        listingItem.data.commonscat,
+                        (commonsImages) => {
+                            listingItem.galleryImages = new CulturalGalleryImages(
+                                wlmImages, commonsImages
+                            );
+                            onSuccess();
+                        }
+                    )
                 }
             );
         }
@@ -436,15 +443,41 @@ $(document).ready(() => {
                 )
             );
 
+            let categories = [];
+            categories = categories.concat(
+                this.state.currentListingItems.map((item) => 'Category:WLM/' + item.data.knid)
+            );
+            categories = categories.concat(
+                this.state.currentListingItems
+                    .map((item) => item.data.commonscat)
+                    .filter((commonscatValue) => StringUtils.emptyToString(commonscatValue) !== '')
+                    .map((commonscatValue) => 'Category:' + commonscatValue)
+            );
+
             CommonsApi.countCategoriesFiles(
-                this.state.currentListingItems.map((item) => 'Category:WLM/' + item.data.knid),
+                categories,
                 (categoriesWithImages) => {
                     let filesCountByCategory = {};
                     categoriesWithImages.forEach((item) => { filesCountByCategory[item.category] = item.files });
 
+                    const getCategoryFilesCount = (category) => {
+                        if (StringUtils.emptyToString(category) === '') {
+                            return 0;
+                        }
+
+                        const filesCount = filesCountByCategory[category];
+                        return filesCount !== undefined ? filesCount : 0;
+                    };
+
                     listingComponents.forEach((listingComponent) => {
-                        const filesCount = filesCountByCategory['Category:WLM/' + listingComponent.listingItem.data.knid];
-                        listingComponent.listingItem.imagesCount = filesCount !== undefined ? filesCount : 0;
+                        listingComponent.listingItem.imagesCount = (
+                            getCategoryFilesCount(
+                                'Category:WLM/' + listingComponent.listingItem.data.knid
+                            ) +
+                            getCategoryFilesCount(
+                                'Category:' +
+                                StringUtils.emptyToString(listingComponent.listingItem.data.commonscat).replace(/_'/g, ' '))
+                        );
                         listingComponent.onUpdateImageCount();
                     });
                 }

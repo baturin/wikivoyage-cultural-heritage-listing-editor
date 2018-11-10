@@ -1,42 +1,40 @@
-let CommonsApi = require('./commons-api');
+import { CommonsApi } from "./commons-api";
 
-let CommonsImagesLoader = {
-    loadImagesFromWLMCategory: function(knid, onSuccess) {
+export const CommonsImagesLoader = {
+    loadImagesFromWLMCategory(knid, onSuccess) {
         if (!knid) {
             onSuccess([]);
         } else {
             CommonsApi.getCategoryImages(
                 'WLM/' + knid, 'max',
-                (images) => this.loadImages(images, 'wlm', onSuccess)
+                (images) => this.loadImages(images, onSuccess)
             );
         }
     },
 
-    loadImagesFromWLECategory: function(knid, onSuccess) {
+    loadImagesFromWLECategory(knid, onSuccess) {
         if (!knid) {
             onSuccess([]);
         } else {
             CommonsApi.getCategoryImages(
                 'Protected_areas_of_Russia/' + knid, 'max',
-                (images) => this.loadImages(images, 'wlm', onSuccess)
+                (images) => this.loadImages(images, onSuccess)
             );
         }
     },
 
-    loadImagesFromCommonsCategory: function(commonsCat, onSuccess) {
+    loadImagesFromCommonsCategory(commonsCat, onSuccess) {
         if (!commonsCat) {
             onSuccess([]);
         } else {
             CommonsApi.getCategoryImages(
                 commonsCat, 'max',
-                (images) => this.loadImages(images, 'commons', onSuccess)
+                (images) => this.loadImages(images, onSuccess)
             );
         }
     },
 
-    loadImages: function (images, categoryType, onSuccess) {
+    loadImages(images, onSuccess) {
         CommonsApi.getImagesInfo(images, onSuccess);
     }
 };
-
-module.exports = CommonsImagesLoader;
