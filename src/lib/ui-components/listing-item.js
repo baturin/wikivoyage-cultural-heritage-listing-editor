@@ -741,6 +741,7 @@ class GalleryComponent {
     constructor(container) {
         this._galleryImages = null;
         this._container = container;
+        this._imageComponents = [];
     }
 
     setGalleryImages(galleryImages) {
@@ -785,12 +786,55 @@ class GalleryComponent {
 
         const imagesDiv = $('<div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center">');
         images.forEach((image) => {
-            const imageElement = $('<img>').attr('src', image.thumb);
-            imagesDiv.append($('<div style="padding: 10px;">').append(imageElement));
+            const imageComponent = new GalleryImageComponent(imagesDiv, image);
+            imageComponent.render();
+            this._imageComponents.push(imageComponent);
         });
 
         return $('<div>')
             .append(headerDiv)
             .append(imagesDiv);
+    }
+}
+
+class GalleryImageComponent {
+    constructor(container, image) {
+        this._container = container;
+        this._image = image;
+    }
+
+    render() {
+        const imageElement = $('<img>').attr('src', this._image.thumb);
+
+        const commonsUrl = 'https://commons.wikimedia.org/wiki/' + this._image.image;
+        const fullSizeUrl = this._image.url;
+
+        const imageLink = (
+            $('<a>')
+                .attr('href', fullSizeUrl)
+                .attr('target', '_blank')
+                .append(imageElement)
+        );
+
+        const viewCommonsLink = (
+            $('<a>')
+                .text('[Смотрeть на Commons]')
+                .attr('href', commonsUrl)
+                .attr('target', '_blank')
+        );
+
+        const viewFullLink = (
+            $('<a>')
+                .text('[Смотреть в полном размере]')
+                .attr('href', fullSizeUrl)
+                .attr('target', '_blank')
+        );
+
+        this._container.append(
+            $('<div style="padding: 10px; display: flex; flex-direction: column; justify-content: center">')
+                .append($('<div>').append(imageLink))
+                .append($('<div style="text-align: center">').append(viewCommonsLink))
+                .append($('<div style="text-align: center">').append(viewFullLink))
+        );
     }
 }
