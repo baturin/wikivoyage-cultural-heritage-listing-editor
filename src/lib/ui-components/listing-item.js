@@ -28,7 +28,202 @@ export class ListingItemComponent {
         ];
     }
 
-    renderUpload() {
+    renderView() {
+        if (this.view === SearchConstants.VIEW_COMPACT) {
+            return this.renderViewCompact();
+        } else {
+            return this.renderViewFull();
+        }
+    }
+
+    renderViewFull() {
+        const listingData = this.listingItem.data;
+
+        this.imageCellComponent = new ImageCellComponent(
+            listingData,
+            this.listingItem.imageThumb,
+            this.listingItem.imagesCount,
+            () => this.onToggleGallery()
+        );
+        const imageCell = this.imageCellComponent.render();
+
+        this.dataCell = $('<td style="padding-left:10px;" valign="middle">');
+        this.renderDataCellView();
+
+        const uploadCellComponent = new UploadCellComponent(listingData);
+        const uploadCell = uploadCellComponent.render();
+
+        const listingRow = $('<tr valign="top">');
+        if (listingData.status === 'destroyed') {
+            listingRow.attr('style', 'color:#808080;')
+        }
+        listingRow.append(imageCell);
+        listingRow.append(this.dataCell);
+        listingRow.append(uploadCell);
+
+        this.galleryRowComponent = new GalleryRowComponent();
+        const galleryRow = this.galleryRowComponent.render();
+
+        const listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');
+        listingTable.append(listingRow);
+        listingTable.append(galleryRow);
+
+        return listingTable;
+    }
+
+    renderDataCellView() {
+        const listingData = this.listingItem.data;
+        this.dataCell.empty();
+        const viewComponent = new ViewComponent(
+            this.dataCell,
+            listingData,
+            () => this.renderDataCellEdit()
+        );
+        viewComponent.render();
+    }
+
+    renderDataCellEdit() {
+        const listingData = this.listingItem.data;
+        this.dataCell.empty();
+        const editComponent = new EditorComponent(
+            this.dataCell,
+            listingData,
+            () => this.onEditDiscard(),
+            (values, changes) => this.onEditSave(values, changes)
+        );
+        editComponent.render();
+    }
+
+    onImageThumbUpdated() {
+        this.imageCellComponent.onImageThumbUpdated(this.listingItem.imageThumb);
+    }
+
+    onUpdateImageCount() {
+        this.imageCellComponent.onUpdateImageCount(this.listingItem.imagesCount);
+    }
+
+
+    onEditDiscard() {
+        this.renderDataCellView();
+    }
+
+    onEditSave(values, changesDescription) {
+        const onSaveSuccessful = () => {
+            this.listingItem.data = values;
+            this.renderDataCellView();
+        };
+
+        if (this.onSaveListing) {
+            this.onSaveListing(
+                this.listingItem.page, this.listingItem.index,
+                values, changesDescription,
+                onSaveSuccessful
+            );
+        } else {
+            onSaveSuccessful();
+        }
+    }
+
+    onToggleGallery() {
+        if (!this.listingItem.galleryImages) {
+            this.onLoadGallery(this.listingItem, () => {
+                this.onGalleryUpdated();
+            });
+        }
+
+        this.galleryRowComponent.toggle();
+    }
+
+    onGalleryUpdated() {
+        this.galleryRowComponent.setGalleryImages(this.listingItem.galleryImages);
+    }
+
+    renderViewCompact() {
+        const listingData = this.listingItem.data;
+        return $('<div>')
+            .append($('<b>').text(listingData.name))
+            .append($('<br/>'))
+            .append(listingData.address)
+    }
+}
+
+class ImageCellComponent {
+    constructor(listingData, imageThumb, galleryImagesCount, onToggleGallery) {
+        this._listingData = listingData;
+        this._imageThumb = imageThumb;
+        this._galleryImagesCount = galleryImagesCount;
+        this._onToggleGallery = onToggleGallery;
+    }
+
+    render() {
+        const imageCell = $('<td width="160px;">');
+        this.image = this.renderImage();
+        imageCell.append(this.image);
+
+        this.galleryLink = $('<a style="display: none;">');
+        this.galleryLink.click(() => this._onToggleGallery());
+
+        imageCell.append(
+            $('<div style="text-align: center;">').append(
+                this.galleryLink
+            )
+        );
+        return imageCell;
+    }
+
+    onImageThumbUpdated(imageThumb) {
+        this._imageThumb = imageThumb;
+        this.renderImageThumb();
+    }
+
+    onUpdateImageCount(galleryImagesCount) {
+        this._galleryImagesCount = galleryImagesCount;
+
+        if (!this.galleryLink) {
+            return;
+        }
+
+        if (this._galleryImagesCount > 0) {
+            this.galleryLink.show();
+            this.galleryLink.text('смотреть фото (' + this._galleryImagesCount + ')');
+        } else {
+            this.galleryLink.hide();
+        }
+    }
+
+    renderImageThumb() {
+        if (this.image && this._listingData.image && this._imageThumb) {
+            this.image.attr('src', this._imageThumb);
+        }
+    }
+
+    renderImage() {
+        const image = $('<img>');
+
+        image.attr(
+            'src',
+            'https://upload.wikimedia.org/' +
+            'wikipedia/commons/thumb/c/ca/Village_without_photo.svg/150px-Village_without_photo.svg.png'
+        );
+        if (this._listingData.image) {
+            image.attr('alt', this._listingData.name);
+        } else {
+            image.attr('alt', 'Нет фото');
+            image.attr('class', 'thumbborder');
+        }
+
+        this.renderImageThumb();
+
+        return image;
+    }
+}
+
+class UploadCellComponent {
+    constructor(listingData) {
+        this._listingData = listingData;
+    }
+
+    render() {
         return (
             $('<td>')
                 .attr(
@@ -50,19 +245,247 @@ export class ListingItemComponent {
         );
     }
 
-    renderEdit() {
-        const listingTable = $('<table border="0" style="font-size:97%; width:100%;">');
+    composeUploadUrl() {
+        const params = {
+            title: 'Special:UploadWizard',
+            campaign: this._listingData.campaign,
+            id: this._listingData.knid,
+            id2: this._listingData.uid,
+            // TODO full description
+            description: this._listingData.description,
+            categories: this._listingData.commonscat,
+            userlang: 'ru'
+        };
+        // TODO check how URL encoding works with spaces
+        return 'http://commons.wikimedia.org/w/index.php?' + $.param(params);
+    }
+}
 
-        const listingRow = $('<tr valign="top">');
-        listingTable.append(listingRow);
+class ViewComponent {
+    constructor(container, listingData, onEdit) {
+        this._container = container;
+        this._listingData = listingData;
+        this._onEdit = onEdit;
+    }
 
-        const imageCell = this.renderImageCell();
-        listingRow.append(imageCell);
+    render() {
+        const isMainComplexElement = (
+            this._listingData.complex && this._listingData.complex === this._listingData.knid
+        );
 
-        const dataCell = $('<td style="padding-left:10px;" valign="middle">');
-        listingRow.append(dataCell);
+        if (this._listingData.complex) {
+            if (isMainComplexElement) {
+                // main complex element
+                this._container.css({'background-color': '#BAFFC1'});
+            } else {
+                this._container.css({'background-color': '#E1FFE4'});
+            }
+        } else {
+            this._container.css({'background-color': '#F8F8F8'});
+        }
 
-        const listingData = this.listingItem.data;
+        if (this._listingData.type === 'architecture') {
+            this._container.append(ListingItemIcons.MonumentType.createArchitectureIcon());
+        } else if (this._listingData.type === 'history') {
+            this._container.append(ListingItemIcons.MonumentType.createHistoryIcon());
+        } else if (this._listingData.type === 'archeology') {
+            this._container.append(ListingItemIcons.MonumentType.createArcheologyIcon());
+        } else if (this._listingData.type === 'monument') {
+            this._container.append(ListingItemIcons.MonumentType.createMonumentIcon());
+        }
+        this._container.append('&nbsp;');
+
+        if (isMainComplexElement) {
+            this._container.append(ListingItemIcons.createComplexMainElementIcon());
+            this._container.append('&nbsp;');
+        }
+
+        const itemNameElement = $('<span class="monument-name" style="font-size:115%; font-weight:bold">');
+        itemNameElement.text(this._listingData.name);
+        this._container.append(itemNameElement);
+
+        const editButton = this.renderEditButton();
+        // TODO handle only click on image
+        editButton.click(() => {
+            this._onEdit();
+        });
+
+        this._container.append(editButton);
+
+        this._container.append($('<br/>'));
+
+        this._container.append($('<i>').text('Адрес: '));
+        if (this._listingData.municipality) {
+            this._container.append($('<i>').text(this._listingData.municipality));
+        }
+        if (this._listingData.munid) {
+            this._container.append('&nbsp;');
+            // TODO urlencode
+            this._container.append(
+                $('<a>')
+                    .attr('href', 'http://wikidata.org/wiki/' + this._listingData.munid)
+                    .append(ListingItemIcons.createMunidIcon())
+            );
+        }
+        if (this._listingData.block) {
+            this._container.append(', квартал ' + this._listingData.block);
+        }
+
+        if (this._listingData.address) {
+            if (this._listingData.municipality) {
+                this._container.append(',&nbsp;');
+            }
+            this._container.append(this._listingData.address);
+        }
+
+        this._container.append($('<br/>'));
+        this._container.append($('<i>').text('Номер объекта: '));
+        const knidSpan = $('<span>')
+            .attr('id', this._listingData.knid)
+            .text(this._listingData.knid);
+        if (this._listingData['knid-new']) {
+            knidSpan.append('&nbsp;&nbsp;/&nbsp;&nbsp;').append(
+                $('<abbr>')
+                    .attr('title', '15-значный номер в Едином государственном реестре')
+                    .append(
+                        $('<a>')
+                            .attr('href', 'https://tools.wmflabs.org/ru_monuments/get_info.php?id=' + this._listingData['knid-new'])
+                            .text(this._listingData['knid-new']))
+            );
+        }
+        // TODO: listing data UID
+        this._container.append(
+            $('<span style="font-size:93%">').append(knidSpan)
+        );
+
+        this._container.append('&nbsp;&nbsp;&nbsp;');
+        this._container.append($('<i>').text('Ссылки:'));
+        this._container.append('&nbsp;');
+
+        if (this._listingData.lat && this._listingData.long) {
+            this._container.append(
+                $('<a>')
+                // TODO correct link & escaping
+                    .attr('href', 'https://tools.wmflabs.org/wikivoyage/w/monmap1.php?lat=' + this._listingData.lat + '&lon=' + this._listingData.long + '&zoom=13&layer=OX&lang=ru')
+                    .append(ListingItemIcons.createMapIcon())
+            );
+            if (this._listingData.precise !== 'yes') {
+                this._container.append($('<span style="color:#FF0000">!</span>'));
+            }
+            this._container.append('&nbsp;');
+        }
+
+        if (this._listingData.wiki) {
+            this._container.append(
+                $('<a>')
+                    .attr('alt', 'Статья в Википедии')
+                    // TODO urlencode
+                    .attr('href', 'http://ru.wikipedia.org/wiki/' + this._listingData.wiki)
+                    .append(ListingItemIcons.createWikipediaIcon())
+            );
+        }
+
+        if (this._listingData.commonscat) {
+            this._container.append(
+                $('<a>')
+                    .attr('alt', 'Категория на Викискладе')
+                    // TODO urlencode
+                    .attr('href', 'http://commons.wikimedia.org/wiki/Category:' + this._listingData.commonscat)
+                    .append(ListingItemIcons.createCommonsIcon())
+            );
+            this._container.append('&thinsp;&thinsp;');
+        }
+
+        if (this._listingData.wdid) {
+            this._container.append(
+                $('<a>')
+                    .attr('alt', 'Элемент в Викиданных')
+                    // TODO urlencode
+                    .attr('href', 'http://www.wikidata.org/wiki/' + this._listingData.wdid)
+                    .append(ListingItemIcons.createWikidataIcon())
+            );
+        }
+
+        // TODO external links
+
+        this._container.append(
+            $('<a>')
+                .attr('href', 'https://commons.wikimedia.org/wiki/Category:WLM/' + this._listingData.knid)
+                .text('галерея')
+        );
+
+        this._container.append('<br>');
+
+        this._container.append($('<i>').text('Описание:'));
+
+        const descriptionComponents = [];
+        if (this._listingData.year) {
+            descriptionComponents.push(this._listingData.year)
+        }
+        if (this._listingData.author) {
+            descriptionComponents.push(this._listingData.author);
+        }
+        if (descriptionComponents.length > 0) {
+            this._container.append(descriptionComponents.join(', ') + '.');
+        }
+
+        let typeText = '';
+        if (this._listingData.type === 'architecture') {
+            typeText = 'Памятник архитектуры';
+        } else if (this._listingData.type === 'history') {
+            typeText = 'Памятник истории';
+        } else if (this._listingData.type === 'archeology') {
+            typeText = 'Памятник археологии';
+        } else if (this._listingData.type === 'monument') {
+            typeText = 'Памятник монументального искусства';
+        }
+        this._container.append(' ' + typeText);
+
+        let protectionText = '';
+        if (this._listingData.protection === 'Ф') {
+            protectionText = '&nbsp;федерального значения';
+        } else if (this._listingData.protection === 'Р') {
+            protectionText = '&nbsp;регионального значения';
+        } else if (this._listingData.protection === 'М') {
+            protectionText = '&nbsp;местного значения';
+        } else if (this._listingData.protection === 'В') {
+            protectionText = ', выявленный';
+        }
+        if (protectionText) {
+            this._container.append(protectionText);
+        }
+
+        // TODO documents
+    }
+
+    renderEditButton() {
+        const editListingButton = $('<span>').attr({
+            'class': 'vcard-edit-button noprint',
+            'style': 'padding-left: 5px;',
+        });
+        const editListingLink = (
+            $('<a>')
+                .attr({
+                    'class': 'icon-pencil',
+                    'title': 'Редактировать',
+                })
+                .text('Редактировать')
+        );
+        editListingButton.append(editListingLink);
+        return editListingButton;
+    }
+}
+
+class EditorComponent {
+    constructor(container, listingData, onDiscard, onSave) {
+        this._container = container;
+        this._listingData = listingData;
+        this._onDiscard = onDiscard;
+        this._onSave = onSave;
+    }
+
+    render() {
+        this._container.css({'background-color': '#FFFFFF'});
 
         const inputName = ListingItemFormComposer.createTextInputLarge();
         const inputRegion = ListingItemFormComposer.createSelector(
@@ -217,16 +640,14 @@ export class ListingItemComponent {
             return listingData;
         };
 
-        setValues(this.listingItem.data);
-
-        inputName.val(listingData.name);
+        setValues(this._listingData);
 
         const nameRow = (
             ListingItemFormComposer.createFormRow('Название:')
                 .append(ListingItemFormComposer.createFormElement(null, inputName))
         );
 
-        dataCell.append(nameRow);
+        this._container.append(nameRow);
 
         const addressRow = (
             ListingItemFormComposer.createFormRow('Адрес:')
@@ -237,7 +658,7 @@ export class ListingItemComponent {
                 .append(ListingItemFormComposer.createFormElement('Улица, дом', inputAddress))
         );
 
-        dataCell.append(addressRow);
+        this._container.append(addressRow);
 
         const coordRow = (
             ListingItemFormComposer.createFormRow('Координаты: ')
@@ -246,7 +667,7 @@ export class ListingItemComponent {
                 .append(ListingItemFormComposer.createFormElement('Заданы точно?', inputPrecise))
         );
 
-        dataCell.append(coordRow);
+        this._container.append(coordRow);
 
         const propsRow = (
             ListingItemFormComposer.createFormRow('Свойства: ')
@@ -258,7 +679,7 @@ export class ListingItemComponent {
                 .append(ListingItemFormComposer.createFormElement('Утрачен', inputDestroyed))
         );
 
-        dataCell.append(propsRow);
+        this._container.append(propsRow);
 
         const linksRow = (
             ListingItemFormComposer.createFormRow('Ссылки: ')
@@ -272,7 +693,7 @@ export class ListingItemComponent {
                 .append(ListingItemFormComposer.createFormElement('Ссылка №2', inputLinkExtra))
         );
 
-        dataCell.append(linksRow);
+        this._container.append(linksRow);
 
         const numbersRow = (
             ListingItemFormComposer.createFormRow('Номера: ')
@@ -281,14 +702,14 @@ export class ListingItemComponent {
                 .append(ListingItemFormComposer.createFormElement('15-значный № объекта', inputKnidNew))
         );
 
-        dataCell.append(numbersRow);
+        this._container.append(numbersRow);
 
         const descriptionRow = (
             ListingItemFormComposer.createFormRow('Описание:')
                 .append(ListingItemFormComposer.createFormElement(null, inputDescription))
         );
 
-        dataCell.append(descriptionRow);
+        this._container.append(descriptionRow);
 
         const inputChanges = ListingItemFormComposer.createTextInputLarge();
         const inputIsMinor = ListingItemFormComposer.createCheckboxInput();
@@ -310,7 +731,7 @@ export class ListingItemComponent {
         const onValueChange = () => {
             if (!changesChanged) {
                 const values = getValues();
-                const originalData = this.listingItem.data;
+                const originalData = this._listingData;
                 const changedItems = [];
                 Object.keys(values).forEach(key => {
                     if (StringUtils.emptyToString(originalData[key]) !== StringUtils.emptyToString(values[key])) {
@@ -331,7 +752,7 @@ export class ListingItemComponent {
         };
         allInputs.forEach((input) => input.change(onValueChange));
 
-        dataCell.append(changesDescriptionRow);
+        this._container.append(changesDescriptionRow);
 
         const buttonsBlock = $('<div>').attr('class', 'ui-dialog-buttonset');
         const buttonDiscard = this.renderButton('Отменить');
@@ -340,36 +761,19 @@ export class ListingItemComponent {
         buttonsBlock.append(buttonSave);
 
         buttonDiscard.click(() => {
-            this.listingItemContainer.empty();
-            this.listingItemContainer.append(this.renderView());
+            this._onDiscard();
         });
         buttonSave.click(() => {
             const values = getValues();
-            const changesDescription = new ChangesDescription(inputChanges.val(), inputIsMinor.is(':checked'));
-            const onSaveSuccessful = () => {
-                this.listingItem.data = values;
+            const changesDescription = new ChangesDescription(
+                inputChanges.val(),
+                inputIsMinor.is(':checked')
+            );
 
-                this.listingItemContainer.empty();
-                this.listingItemContainer.append(this.renderView());
-            };
-
-            if (this.onSaveListing) {
-                this.onSaveListing(
-                    this.listingItem.page, this.listingItem.index,
-                    values, changesDescription,
-                    onSaveSuccessful
-                )
-                ;
-            } else {
-                onSaveSuccessful();
-            }
+            this._onSave(values, changesDescription);
         });
 
-        dataCell.append(buttonsBlock);
-
-        listingRow.append(this.renderUpload());
-
-        return listingTable;
+        this._container.append(buttonsBlock);
     }
 
     renderButton(buttonText) {
@@ -382,339 +786,6 @@ export class ListingItemComponent {
                         .text(buttonText)
                 )
         );
-    }
-
-    renderImage() {
-        const listingData = this.listingItem.data;
-        const imageThumb = this.listingItem.imageThumb;
-
-        const image = $('<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Village_without_photo.svg/150px-Village_without_photo.svg.png">');
-
-        image.attr(
-            'src',
-            'https://upload.wikimedia.org/' +
-            'wikipedia/commons/thumb/c/ca/Village_without_photo.svg/150px-Village_without_photo.svg.png'
-        );
-        if (listingData.image) {
-            image.attr('alt', listingData.name);
-        } else {
-            image.attr('alt', 'Нет фото');
-            image.attr('class', 'thumbborder');
-        }
-
-        if (listingData.image && imageThumb) {
-            image.attr('src', imageThumb);
-        }
-
-        return image;
-    }
-
-    onImageThumbUpdated() {
-        if (this.image) {
-            this.image.attr('src', this.listingItem.imageThumb);
-        }
-    }
-
-    onUpdateImageCount() {
-        if (!this.galleryLink) {
-            return;
-        }
-
-        if (this.listingItem.imagesCount > 0) {
-            this.galleryLink.show();
-            this.galleryLink.text('смотреть фото (' + this.listingItem.imagesCount + ')');
-        }
-    }
-
-    onGalleryUpdated() {
-        this.galleryRow.setGalleryImages(this.listingItem.galleryImages);
-    }
-
-    renderImageCell() {
-        const imageCell = $('<td width="160px;">');
-        this.image = this.renderImage();
-        imageCell.append(this.image);
-
-        this.galleryLink = $('<a style="display: none;">').text('галерея');
-        this.galleryLink.click(() => {
-            if (!this.listingItem.galleryImages) {
-                this.onLoadGallery(this.listingItem, () => {
-                    this.onGalleryUpdated();
-                });
-            }
-
-            this.galleryRow.toggle();
-        });
-
-        imageCell.append(
-            $('<div style="text-align: center;">').append(
-                this.galleryLink
-            )
-        );
-        return imageCell;
-    }
-
-    renderView() {
-        if (this.view === SearchConstants.VIEW_COMPACT) {
-            return this.renderViewCompact();
-        } else {
-            return this.renderViewFull();
-        }
-    }
-
-    renderViewCompact() {
-        const listingData = this.listingItem.data;
-        return $('<div>')
-            .append($('<b>').text(listingData.name))
-            .append($('<br/>'))
-            .append(listingData.address)
-    }
-
-    renderViewFull() {
-        const listingData = this.listingItem.data;
-
-        const listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');
-
-        const listingRow = $('<tr valign="top">');
-        if (listingData.status === 'destroyed') {
-            listingRow.attr('style', 'color:#808080;')
-        }
-
-        listingTable.append(listingRow);
-
-        const imageCell = this.renderImageCell();
-        listingRow.append(imageCell);
-
-        const dataCell = $('<td style="padding-left:10px;" valign="middle">');
-
-        const isMainComplexElement = (
-            listingData.complex && listingData.complex === listingData.knid
-        );
-
-        if (listingData.complex) {
-            if (isMainComplexElement) {
-                // main complex element
-                dataCell.css({'background-color': '#BAFFC1'});
-            } else {
-                dataCell.css({'background-color': '#E1FFE4'});
-            }
-        } else {
-            dataCell.css({'background-color': '#F8F8F8'});
-        }
-        listingRow.append(dataCell);
-
-        if (this.listingItem.data.type === 'architecture') {
-            dataCell.append(ListingItemIcons.MonumentType.createArchitectureIcon());
-        } else if (this.listingItem.data.type === 'history') {
-            dataCell.append(ListingItemIcons.MonumentType.createHistoryIcon());
-        } else if (this.listingItem.data.type === 'archeology') {
-            dataCell.append(ListingItemIcons.MonumentType.createArcheologyIcon());
-        } else if (this.listingItem.data.type === 'monument') {
-            dataCell.append(ListingItemIcons.MonumentType.createMonumentIcon());
-        }
-        dataCell.append('&nbsp;');
-
-        if (isMainComplexElement) {
-            dataCell.append(ListingItemIcons.createComplexMainElementIcon());
-            dataCell.append('&nbsp;');
-        }
-
-        const itemNameElement = $('<span class="monument-name" style="font-size:115%; font-weight:bold">');
-        itemNameElement.text(listingData.name);
-        dataCell.append(itemNameElement);
-
-        const editButton = this.renderEditButton();
-        // TODO handle only click on image
-        editButton.click(() => {
-            this.listingItemContainer.empty();
-            this.listingItemContainer.append(this.renderEdit());
-        });
-
-        dataCell.append(editButton);
-
-        dataCell.append($('<br/>'));
-
-        dataCell.append($('<i>').text('Адрес: '));
-        if (listingData.municipality) {
-            dataCell.append($('<i>').text(listingData.municipality));
-        }
-        if (listingData.munid) {
-            dataCell.append('&nbsp;');
-            // TODO urlencode
-            dataCell.append(
-                $('<a>')
-                    .attr('href', 'http://wikidata.org/wiki/' + listingData.munid)
-                    .append(ListingItemIcons.createMunidIcon())
-            );
-        }
-        if (listingData.block) {
-            dataCell.append(', квартал ' + listingData.block);
-        }
-
-        if (listingData.address) {
-            if (listingData.municipality) {
-                dataCell.append(',&nbsp;');
-            }
-            dataCell.append(listingData.address);
-        }
-
-        dataCell.append($('<br/>'));
-        dataCell.append($('<i>').text('Номер объекта: '));
-        const knidSpan = $('<span>')
-            .attr('id', listingData.knid)
-            .text(listingData.knid);
-        if (listingData['knid-new']) {
-            knidSpan.append('&nbsp;&nbsp;/&nbsp;&nbsp;').append(
-                $('<abbr>')
-                    .attr('title', '15-значный номер в Едином государственном реестре')
-                    .append(
-                        $('<a>')
-                            .attr('href', 'https://tools.wmflabs.org/ru_monuments/get_info.php?id=' + listingData['knid-new'])
-                            .text(listingData['knid-new']))
-            );
-        }
-        // TODO: listing data UID
-        dataCell.append(
-            $('<span style="font-size:93%">').append(knidSpan)
-        );
-
-        dataCell.append('&nbsp;&nbsp;&nbsp;');
-        dataCell.append($('<i>').text('Ссылки:'));
-        dataCell.append('&nbsp;');
-
-        if (listingData.lat && listingData.long) {
-            dataCell.append(
-                $('<a>')
-                // TODO correct link & escaping
-                    .attr('href', 'https://tools.wmflabs.org/wikivoyage/w/monmap1.php?lat=' + listingData.lat + '&lon=' + listingData.long + '&zoom=13&layer=OX&lang=ru')
-                    .append(ListingItemIcons.createMapIcon())
-            );
-            if (listingData.precise !== 'yes') {
-                dataCell.append($('<span style="color:#FF0000">!</span>'));
-            }
-            dataCell.append('&nbsp;');
-        }
-
-        if (listingData.wiki) {
-            dataCell.append(
-                $('<a>')
-                    .attr('alt', 'Статья в Википедии')
-                    // TODO urlencode
-                    .attr('href', 'http://ru.wikipedia.org/wiki/' + listingData.wiki)
-                    .append(ListingItemIcons.createWikipediaIcon())
-            );
-        }
-
-        if (listingData.commonscat) {
-            dataCell.append(
-                $('<a>')
-                    .attr('alt', 'Категория на Викискладе')
-                    // TODO urlencode
-                    .attr('href', 'http://commons.wikimedia.org/wiki/Category:' + listingData.commonscat)
-                    .append(ListingItemIcons.createCommonsIcon())
-            );
-            dataCell.append('&thinsp;&thinsp;');
-        }
-
-        if (listingData.wdid) {
-            dataCell.append(
-                $('<a>')
-                    .attr('alt', 'Элемент в Викиданных')
-                    // TODO urlencode
-                    .attr('href', 'http://www.wikidata.org/wiki/' + listingData.wdid)
-                    .append(ListingItemIcons.createWikidataIcon())
-            );
-        }
-
-        // TODO external links
-
-        dataCell.append(
-            $('<a>')
-                .attr('href', 'https://commons.wikimedia.org/wiki/Category:WLM/' + listingData.knid)
-                .text('галерея')
-        );
-
-        dataCell.append('<br>');
-
-        dataCell.append($('<i>').text('Описание:'));
-
-        const descriptionComponents = [];
-        if (listingData.year) {
-            descriptionComponents.push(listingData.year)
-        }
-        if (listingData.author) {
-            descriptionComponents.push(listingData.author);
-        }
-        if (descriptionComponents.length > 0) {
-            dataCell.append(descriptionComponents.join(', ') + '.');
-        }
-
-        let typeText = '';
-        if (listingData.type === 'architecture') {
-            typeText = 'Памятник архитектуры';
-        } else if (listingData.type === 'history') {
-            typeText = 'Памятник истории';
-        } else if (listingData.type === 'archeology') {
-            typeText = 'Памятник археологии';
-        } else if (listingData.type === 'monument') {
-            typeText = 'Памятник монументального искусства';
-        }
-        dataCell.append(' ' + typeText);
-
-        let protectionText = '';
-        if (listingData.protection === 'Ф') {
-            protectionText = '&nbsp;федерального значения';
-        } else if (listingData.protection === 'Р') {
-            protectionText = '&nbsp;регионального значения';
-        } else if (listingData.protection === 'М') {
-            protectionText = '&nbsp;местного значения';
-        } else if (listingData.protection === 'В') {
-            protectionText = ', выявленный';
-        }
-        if (protectionText) {
-            dataCell.append(protectionText);
-        }
-
-        // TODO documents
-
-        listingRow.append(this.renderUpload());
-
-        this.galleryRow = new GalleryRowComponent();
-        listingTable.append(this.galleryRow.render());
-
-        return listingTable;
-    }
-
-    renderEditButton() {
-        const editListingButton = $('<span>').attr({
-            'class': 'vcard-edit-button noprint',
-            'style': 'padding-left: 5px;',
-        });
-        const editListingLink = (
-            $('<a>')
-                .attr({
-                    'class': 'icon-pencil',
-                    'title': 'Редактировать',
-                })
-                .text('Редактировать')
-        );
-        editListingButton.append(editListingLink);
-        return editListingButton;
-    }
-
-    composeUploadUrl() {
-        const params = {
-            title: 'Special:UploadWizard',
-            campaign: this.listingItem.data.campaign,
-            id: this.listingItem.data.knid,
-            id2: this.listingItem.data.uid,
-            // TODO full description
-            description: this.listingItem.data.description,
-            categories: this.listingItem.data.commonscat,
-            userlang: 'ru'
-        };
-        // TODO check how URL encoding works with spaces
-        return 'http://commons.wikimedia.org/w/index.php?' + $.param(params);
     }
 }
 
