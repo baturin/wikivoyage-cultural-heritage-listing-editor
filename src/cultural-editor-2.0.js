@@ -343,8 +343,9 @@ $(document).ready(() => {
             downloadContent('listings.gpx', header + data + footer);
         }
 
-        onSaveListing(page, listingIndex, data, changesDescription, onSuccess) {
+        onSaveListing(page, listingComponent, listingIndex, data, changesDescription, onSuccess) {
             const newListingText = CulturalEditorListingSerializer.serializeListingData(data);
+            const editor = this;
 
             const api = new MediawikiApi();
             api.getPageText(
@@ -365,7 +366,7 @@ $(document).ready(() => {
                         changesDescriptionText, changesDescription.getIsMinor(),
                         null, null,
                         () => {
-                            onSuccess();
+                            editor.loadImageThumb(listingComponent, () => onSuccess(), true);
                         },
                         () => {
                             alert('Failed to save listing');
@@ -396,6 +397,26 @@ $(document).ready(() => {
             );
         }
 
+        loadImageThumb(listingComponent, onSuccess, force) {
+            if (listingComponent.listingItem.data.image && (!listingComponent.listingItem.imageThumb || force)) {
+                WikivoyageApi.getImageInfo(
+                    'File:' + listingComponent.listingItem.data.image,
+                    (result) => {
+                        listingComponent.listingItem.imageThumb = result.thumb;
+                        listingComponent.onImageThumbUpdated();
+                        onSuccess();
+                    },
+                    () => {
+                        listingComponent.onImageThumbUpdated();
+                        onSuccess();
+                    }
+                )
+            } else {
+                listingComponent.onImageThumbUpdated();
+                onSuccess();
+            }
+        }
+
         renderData() {
             this.dataElement.empty();
 
@@ -416,7 +437,7 @@ $(document).ready(() => {
                 const listingComponent = new ListingItemComponent(
                     listingItem,
                     this.state.view,
-                    this.onSaveListing,
+                    (...args) => this.onSaveListing(...args),
                     this.onLoadGallery,
                 );
                 this.dataElement.append(...listingComponent.render());
@@ -426,23 +447,7 @@ $(document).ready(() => {
 
             AsyncUtils.runSequence(
                 listingComponents.map(
-                    (listingComponent) => (onSuccess) => {
-                        if (listingComponent.listingItem.data.image && !listingComponent.listingItem.imageThumb) {
-                            WikivoyageApi.getImageInfo(
-                                'File:' + listingComponent.listingItem.data.image,
-                                (result) => {
-                                    listingComponent.listingItem.imageThumb = result.thumb;
-                                    listingComponent.onImageThumbUpdated();
-                                    onSuccess();
-                                },
-                                () => {
-                                    onSuccess();
-                                }
-                            )
-                        } else {
-                            onSuccess();
-                        }
-                    }
+                    (listingComponent) => (onSuccess) => this.loadImageThumb(listingComponent, onSuccess)
                 )
             );
 

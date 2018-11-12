@@ -129,7 +129,7 @@ export class ListingItemComponent {
 
         if (this.onSaveListing) {
             this.onSaveListing(
-                this.listingItem.page, this.listingItem.index,
+                this.listingItem.page, this, this.listingItem.index,
                 values, changesDescription,
                 onSaveSuccessful
             );
