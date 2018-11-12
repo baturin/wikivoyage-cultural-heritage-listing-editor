@@ -434,6 +434,9 @@ $(document).ready(() => {
                                     listingComponent.listingItem.imageThumb = result.thumb;
                                     listingComponent.onImageThumbUpdated();
                                     onSuccess();
+                                },
+                                () => {
+                                    onSuccess();
                                 }
                             )
                         } else {

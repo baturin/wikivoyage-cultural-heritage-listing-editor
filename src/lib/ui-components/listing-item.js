@@ -17,6 +17,7 @@ export class ListingItemComponent {
         this.listingItemContainer = $('<div>');
         this.onSaveListing = onSaveListing;
         this.onLoadGallery = onLoadGallery;
+        this._mode = MODES.VIEW;
     }
 
     render() {
@@ -61,8 +62,9 @@ export class ListingItemComponent {
         listingRow.append(this.dataCell);
         listingRow.append(uploadCell);
 
-        this.galleryRowComponent = new GalleryRowComponent();
+        this.galleryRowComponent = new GalleryRowComponent((image) => this.onSelectImage(image));
         const galleryRow = this.galleryRowComponent.render();
+        this.galleryRowComponent.updateMode(this._mode);
 
         const listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');
         listingTable.append(listingRow);
@@ -72,6 +74,9 @@ export class ListingItemComponent {
     }
 
     renderDataCellView() {
+        this._mode = MODES.VIEW;
+        this.updateMode();
+
         const listingData = this.listingItem.data;
         this.dataCell.empty();
         const viewComponent = new ViewComponent(
@@ -83,15 +88,24 @@ export class ListingItemComponent {
     }
 
     renderDataCellEdit() {
+        this._mode = MODES.EDIT;
+        this.updateMode();
+
         const listingData = this.listingItem.data;
         this.dataCell.empty();
-        const editComponent = new EditorComponent(
+        this._editComponent = new EditorComponent(
             this.dataCell,
             listingData,
             () => this.onEditDiscard(),
             (values, changes) => this.onEditSave(values, changes)
         );
-        editComponent.render();
+        this._editComponent.render();
+    }
+
+    updateMode() {
+        if (this.galleryRowComponent) {
+            this.galleryRowComponent.onModeUpdate(this._mode);
+        }
     }
 
     onImageThumbUpdated() {
@@ -136,6 +150,12 @@ export class ListingItemComponent {
 
     onGalleryUpdated() {
         this.galleryRowComponent.setGalleryImages(this.listingItem.galleryImages);
+    }
+
+    onSelectImage(image) {
+        if (this._editComponent) {
+            this._editComponent.setImage(image);
+        }
     }
 
     renderViewCompact() {
@@ -484,6 +504,10 @@ class EditorComponent {
         this._onSave = onSave;
     }
 
+    setImage(image) {
+        this._inputImage.val(image);
+    }
+
     render() {
         this._container.css({'background-color': '#FFFFFF'});
 
@@ -533,7 +557,7 @@ class EditorComponent {
         const inputAuthor = ListingItemFormComposer.createTextInput();
         const inputDestroyed = ListingItemFormComposer.createCheckboxInput();
 
-        const inputImage = ListingItemFormComposer.createTextInput();
+        this._inputImage = ListingItemFormComposer.createTextInput();
         const inputWikipedia = ListingItemFormComposer.createTextInput();
         const inputWikidata = ListingItemFormComposer.createTextInputSmall();
         const inputCommons = ListingItemFormComposer.createTextInput();
@@ -563,7 +587,7 @@ class EditorComponent {
             inputKnid,
             inputComplex,
             inputKnidNew,
-            inputImage,
+            this._inputImage,
             inputWikipedia,
             inputWikidata,
             inputCommons,
@@ -593,7 +617,7 @@ class EditorComponent {
             knid: inputKnid,
             complex: inputComplex,
             'knid-new': inputKnidNew,
-            image: inputImage,
+            image: this._inputImage,
             wiki: inputWikipedia,
             wdid: inputWikidata,
             commonscat: inputCommons,
@@ -683,7 +707,7 @@ class EditorComponent {
 
         const linksRow = (
             ListingItemFormComposer.createFormRow('Ссылки: ')
-                .append(ListingItemFormComposer.createFormElement('Изображение', inputImage))
+                .append(ListingItemFormComposer.createFormElement('Изображение', this._inputImage))
                 .append(ListingItemFormComposer.createFormElement('Википедия', inputWikipedia))
                 .append(ListingItemFormComposer.createFormElement('Викиданные', inputWikidata))
                 .append(ListingItemFormComposer.createFormElement('Викисклад', inputCommons))
@@ -790,13 +814,26 @@ class EditorComponent {
 }
 
 class GalleryRowComponent {
+    constructor(onSelectImage) {
+        this._onSelectImage = onSelectImage;
+    }
+
     render() {
         this._galleryContents = $('<td colspan="2">');
-        this._galleryComponent = new GalleryComponent(this._galleryContents);
+        this._galleryComponent = new GalleryComponent(this._galleryContents, this._onSelectImage);
         this._galleryComponent.render();
         this._galleryRow = $('<tr style="display: none;">').append(this._galleryContents);
 
         return this._galleryRow;
+    }
+
+    onModeUpdate(mode) {
+        this._mode = mode;
+        this.updateMode();
+    }
+
+    updateMode() {
+        this._galleryComponent.onModeUpdate(this._mode);
     }
 
     toggle() {
@@ -809,10 +846,22 @@ class GalleryRowComponent {
 }
 
 class GalleryComponent {
-    constructor(container) {
+    constructor(container, onSelectImage) {
         this._galleryImages = null;
         this._container = container;
         this._imageComponents = [];
+        this._onSelectImage = onSelectImage;
+    }
+
+    onModeUpdate(mode) {
+        this._mode = mode;
+        this.updateMode();
+    }
+
+    updateMode() {
+        this._imageComponents.forEach((imageComponent) => {
+            imageComponent.onModeUpdate(this._mode);
+        });
     }
 
     setGalleryImages(galleryImages) {
@@ -857,7 +906,7 @@ class GalleryComponent {
 
         const imagesDiv = $('<div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center">');
         images.forEach((image) => {
-            const imageComponent = new GalleryImageComponent(imagesDiv, image);
+            const imageComponent = new GalleryImageComponent(imagesDiv, image, this._onSelectImage);
             imageComponent.render();
             this._imageComponents.push(imageComponent);
         });
@@ -869,9 +918,23 @@ class GalleryComponent {
 }
 
 class GalleryImageComponent {
-    constructor(container, image) {
+    constructor(container, image, onSelect) {
         this._container = container;
         this._image = image;
+        this._onSelect = onSelect;
+    }
+
+    onModeUpdate(mode) {
+        this.mode = mode;
+        this.updateMode();
+    }
+
+    updateMode() {
+        if (this.mode === MODES.EDIT) {
+            this._selectLink.show();
+        } else {
+            this._selectLink.hide();
+        }
     }
 
     render() {
@@ -901,11 +964,25 @@ class GalleryImageComponent {
                 .attr('target', '_blank')
         );
 
+        this._selectLink = (
+            $('<a style="display: none;">')
+                .text('[Выбрать]')
+                .click(() => this._onSelect(this._image.image.replace(/^File:/, '').replace(' ', '_')))
+        );
+
         this._container.append(
             $('<div style="padding: 10px; display: flex; flex-direction: column; justify-content: center">')
                 .append($('<div>').append(imageLink))
                 .append($('<div style="text-align: center">').append(viewCommonsLink))
                 .append($('<div style="text-align: center">').append(viewFullLink))
+                .append($('<div style="text-align: center">').append(this._selectLink))
         );
+
+        this.updateMode();
     }
 }
+
+const MODES = {
+    VIEW: 'view',
+    EDIT: 'edit',
+};

@@ -2,7 +2,7 @@
 export const WikivoyageApi = {
     baseUrl: 'https://ru.wikivoyage.org/w/api.php',
 
-    executeRequest: function(parameters, onSuccess) {
+    executeRequest: function(parameters, onSuccess, onFailure) {
         $.ajax({
             url: this.baseUrl,
             data: parameters,
@@ -10,6 +10,10 @@ export const WikivoyageApi = {
             dataType: 'jsonp'
         }).done(function(data) {
             onSuccess(data);
+        }).fail(function() {
+            if (onFailure) {
+                onFailure();
+            }
         });
     },
 
@@ -39,7 +43,7 @@ export const WikivoyageApi = {
         )
     },
 
-    getImageInfo: function(image, onSuccess) {
+    getImageInfo: function(image, onSuccess, onFailure) {
         var self = this;
 
         self.executeRequest(
@@ -54,12 +58,18 @@ export const WikivoyageApi = {
             },
             function(data) {
                 if (!data.query || !data.query.pages) {
+                    if (onFailure) {
+                        onFailure();
+                    }
                     return;
                 }
 
                 var pages = data.query.pages;
                 var firstPage = pages[Object.keys(pages)[0]];
                 if (!firstPage || !firstPage.imageinfo || firstPage.imageinfo.length <= 0) {
+                    if (onFailure) {
+                        onFailure();
+                    }
                     return;
                 }
                 var imageInfo = firstPage.imageinfo[0];
@@ -68,6 +78,11 @@ export const WikivoyageApi = {
                     'thumb': imageInfo.thumburl,
                     'url': imageInfo.url
                 });
+            },
+            function() {
+                if (onFailure) {
+                    onFailure();
+                }
             }
         )
     },
