@@ -669,6 +669,7 @@ class EditorComponent {
         const nameRow = (
             ListingItemFormComposer.createFormRow('Название:')
                 .append(ListingItemFormComposer.createFormElement(null, inputName))
+                .append(ListingItemFormComposer.createInsertSymbols(inputName))
         );
 
         this._container.append(nameRow);

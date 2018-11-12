@@ -1,3 +1,4 @@
+import {InputInsertSymbols} from "../input-insert-symbols";
 
 export const ListingItemFormComposer = {
     createTextInput(size) {
@@ -86,5 +87,26 @@ export const ListingItemFormComposer = {
         );
 
         return formElement;
+    },
+
+    createInsertSymbols(input) {
+        const buttonInsertQuotes = $('<a>', {
+            'class': 'name-quotes-template',
+            href: 'javascript:;',
+            html: '«»'
+        });
+        const buttonInsertDash = $('<a>', {
+            'class': 'name-dash-template',
+            href: 'javascript:;',
+            html: '—'
+        });
+        InputInsertSymbols.addDashInsertHandler(buttonInsertDash, input);
+        InputInsertSymbols.addQuotesInsertHandler(buttonInsertQuotes, input);
+
+        return $('<span>')
+            .append('&nbsp;')
+            .append(buttonInsertQuotes)
+            .append('&nbsp;')
+            .append(buttonInsertDash);
     }
 };

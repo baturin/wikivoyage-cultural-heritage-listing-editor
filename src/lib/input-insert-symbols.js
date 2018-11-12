@@ -1,5 +1,5 @@
 
-InputInsertSymbols = {
+export const InputInsertSymbols = {
     addQuotesInsertHandler(insertButton, insertToInput) {
         insertButton.click(function() {
             let selectionStart = insertToInput[0].selectionStart;
@@ -44,5 +44,3 @@ InputInsertSymbols = {
         }
     }
 };
-
-module.exports = InputInsertSymbols;
