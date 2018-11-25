@@ -18,6 +18,10 @@ export class ListingItemComponent {
         this.onSaveListing = onSaveListing;
         this.onLoadGallery = onLoadGallery;
         this._mode = MODES.VIEW;
+
+        this._listingTable = null;
+        this._listingDataRow = null;
+        this._listingGalleryRow = null;
     }
 
     render() {
@@ -54,23 +58,36 @@ export class ListingItemComponent {
         const uploadCellComponent = new UploadCellComponent(listingData);
         const uploadCell = uploadCellComponent.render();
 
-        const listingRow = $('<tr valign="top">');
-        if (listingData.status === 'destroyed') {
-            listingRow.attr('style', 'color:#808080;')
-        }
-        listingRow.append(imageCell);
-        listingRow.append(this.dataCell);
-        listingRow.append(uploadCell);
+        this._listingDataRow = $('<tr valign="top">');
+        this._listingDataRow.append(imageCell);
+        this._listingDataRow.append(this.dataCell);
+        this._listingDataRow.append(uploadCell);
 
         this.galleryRowComponent = new GalleryRowComponent((image) => this.onSelectImage(image));
-        const galleryRow = this.galleryRowComponent.render();
+        this._listingGalleryRow = this.galleryRowComponent.render();
         this.galleryRowComponent.updateMode(this._mode);
 
-        const listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');
-        listingTable.append(listingRow);
-        listingTable.append(galleryRow);
+        this._listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');
+        this._listingTable.append(this._listingDataRow);
+        this._listingTable.append(this._listingGalleryRow);
 
-        return listingTable;
+        this._updateListingDataStatus();
+
+        return this._listingTable;
+    }
+
+    _updateListingDataStatus() {
+        const listingData = this.listingItem.data;
+
+        if (!this._listingDataRow) {
+            return;
+        }
+
+        if (this._mode === MODES.VIEW && listingData.status === 'destroyed') {
+            this._listingDataRow.css('color', '#808080');
+        } else {
+            this._listingDataRow.css('color', '#000000');
+        }
     }
 
     renderDataCellView() {
@@ -82,7 +99,10 @@ export class ListingItemComponent {
         const viewComponent = new ViewComponent(
             this.dataCell,
             listingData,
-            () => this.renderDataCellEdit()
+            () => {
+                this.renderDataCellEdit();
+                this._updateListingDataStatus();
+            }
         );
         viewComponent.render();
     }
@@ -119,12 +139,14 @@ export class ListingItemComponent {
 
     onEditDiscard() {
         this.renderDataCellView();
+        this._updateListingDataStatus();
     }
 
     onEditSave(values, changesDescription) {
         const onSaveSuccessful = () => {
             this.listingItem.data = values;
             this.renderDataCellView();
+            this._updateListingDataStatus();
         };
 
         if (this.onSaveListing) {
