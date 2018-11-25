@@ -315,15 +315,9 @@ class ViewComponent {
             this._listingData.complex && this._listingData.complex === this._listingData.knid
         );
 
-        if (this._listingData.complex) {
-            if (isMainComplexElement) {
-                // main complex element
-                this._container.css({'background-color': '#BAFFC1'});
-            } else {
-                this._container.css({'background-color': '#E1FFE4'});
-            }
-        } else {
-            this._container.css({'background-color': '#F8F8F8'});
+        const cardBackgroundColor = this._getCardBackgroundColor();
+        if (cardBackgroundColor) {
+            this._container.css({'background-color': cardBackgroundColor});
         }
 
         if (this._listingData.type === 'architecture') {
@@ -515,6 +509,40 @@ class ViewComponent {
         );
         editListingButton.append(editListingLink);
         return editListingButton;
+    }
+
+    _getCardBackgroundColor() {
+        const knid = this._listingData.knid;
+        const complex = this._listingData.complex;
+
+        if (!knid) {
+            return '';
+        }
+
+        const isOfficial = !(knid % 100000000 >= 40000000 && knid % 100000000 <= 49999999);
+        const isMainComplexElement = (knid === complex);
+
+        if (isOfficial) {
+            if (complex) {
+                if (isMainComplexElement) {
+                    return '#baffc1';
+                } else {
+                    return '#e1ffe4';
+                }
+            } else {
+                return '#f8f8f8';
+            }
+        } else {
+            if (complex) {
+                if (isMainComplexElement) {
+                    return '#cdeefe';
+                } else {
+                    return '#ebf5f9';
+                }
+            } else {
+                return '#f8f8ed';
+            }
+        }
     }
 }
 
