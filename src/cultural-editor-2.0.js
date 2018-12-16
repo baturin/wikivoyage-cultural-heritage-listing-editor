@@ -366,7 +366,7 @@ $(document).ready(() => {
                         changesDescriptionText, changesDescription.getIsMinor(),
                         null, null,
                         () => {
-                            editor.loadImageThumb(listingComponent, () => onSuccess(), true);
+                            editor.loadImageThumb(listingComponent, () => onSuccess(), true, data.image);
                         },
                         () => {
                             alert('Failed to save listing');
@@ -397,10 +397,11 @@ $(document).ready(() => {
             );
         }
 
-        loadImageThumb(listingComponent, onSuccess, force) {
-            if (listingComponent.listingItem.data.image && (!listingComponent.listingItem.imageThumb || force)) {
+        loadImageThumb(listingComponent, onSuccess, force, newImage) {
+            const image = newImage ? newImage : listingComponent.listingItem.data.image;
+            if (image && (!listingComponent.listingItem.imageThumb || force)) {
                 WikivoyageApi.getImageInfo(
-                    'File:' + listingComponent.listingItem.data.image,
+                    'File:' + image,
                     (result) => {
                         listingComponent.listingItem.imageThumb = result.thumb;
                         listingComponent.onImageThumbUpdated();
