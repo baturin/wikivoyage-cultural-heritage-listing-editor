@@ -556,6 +556,7 @@ class EditorComponent {
 
     setImage(image) {
         this._inputImage.val(image);
+        this._onValueChange();
     }
 
     render() {
@@ -803,7 +804,7 @@ class EditorComponent {
             changesChanged = true;
         });
 
-        const onValueChange = () => {
+        this._onValueChange = () => {
             if (!changesChanged) {
                 const values = getValues();
                 const originalData = this._listingData;
@@ -816,6 +817,8 @@ class EditorComponent {
 
                 if (ArrayUtils.consistsOnlyOf(changedItems, ['name'])) {
                     inputChanges.val('название');
+                } else if (ArrayUtils.consistsOnlyOf(changedItems, ['image'])) {
+                    inputChanges.val('изображение');
                 } else if (ArrayUtils.consistsOnlyOf(changedItems, ['address'])) {
                     inputChanges.val('адрес');
                 } else if (ArrayUtils.consistsOnlyOf(changedItems, ['lat', 'long', 'precise'])) {
@@ -825,7 +828,7 @@ class EditorComponent {
                 }
             }
         };
-        allInputs.forEach((input) => input.change(onValueChange));
+        allInputs.forEach((input) => input.change(this._onValueChange));
 
         this._container.append(changesDescriptionRow);
 
