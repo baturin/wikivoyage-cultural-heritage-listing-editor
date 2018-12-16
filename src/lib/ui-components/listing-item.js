@@ -65,7 +65,7 @@ export class ListingItemComponent {
 
         this.galleryRowComponent = new GalleryRowComponent((image) => this.onSelectImage(image));
         this._listingGalleryRow = this.galleryRowComponent.render();
-        this.galleryRowComponent.updateMode(this._mode);
+        this.galleryRowComponent.onModeUpdate(this._mode);
 
         this._listingTable = $('<table class="monument" border="0" style="font-size:97%; width:100%;">');
         this._listingTable.append(this._listingDataRow);
@@ -957,7 +957,7 @@ class GalleryComponent {
 
         const imagesDiv = $('<div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center">');
         images.forEach((image) => {
-            const imageComponent = new GalleryImageComponent(imagesDiv, image, this._onSelectImage);
+            const imageComponent = new GalleryImageComponent(imagesDiv, image, this._onSelectImage, this._mode);
             imageComponent.render();
             this._imageComponents.push(imageComponent);
         });
@@ -969,10 +969,11 @@ class GalleryComponent {
 }
 
 class GalleryImageComponent {
-    constructor(container, image, onSelect) {
+    constructor(container, image, onSelect, mode) {
         this._container = container;
         this._image = image;
         this._onSelect = onSelect;
+        this.mode = mode;
     }
 
     onModeUpdate(mode) {
