@@ -623,6 +623,8 @@ mw.loader.using(['mediawiki.api'], function() {
         serializer.writeParametersLine(["commonscat", "protection"], ["protection"]);
         serializer.writeParameterLine("link");
         serializer.writeParameterLine("linkextra", true);
+        serializer.writeParameterLine("sobory", true);
+        serializer.writeParameterLine("temples", true);
         serializer.writeParameterLine("document", true);
         serializer.writeParameterLine("doc", true);
         serializer.writeParameterLine("dismissed", true);
@@ -1182,15 +1184,6 @@ mw.loader.using(['mediawiki.api'], function() {
             var inputAddress = ListingEditorFormComposer.createInputFormRowText(
                 'input-address', 'Адрес', 'улица название, номер дома'
             );
-            var inputLat = ListingEditorFormComposer.createInputFormRowText(
-                'input-lat', 'Широта', '11.11111', true
-            );
-            var inputLong = ListingEditorFormComposer.createInputFormRowText(
-                'input-long', 'Долгота', '111.11111', true
-            );
-            var inputPrecise = ListingEditorFormComposer.createInputFormRowCheckbox(
-                'input-precise', 'Точные координаты'
-            );
             var inputYear = ListingEditorFormComposer.createInputFormRowText(
                 'input-year', 'Год постройки', 'yyyy', true
             );
@@ -1233,24 +1226,40 @@ mw.loader.using(['mediawiki.api'], function() {
             var inputLinkExtra = ListingEditorFormComposer.createInputFormRowText(
                 'input-linkextra', 'Ссылка №2', 'внешняя ссылка с дополнительной информацией об объекте'
             );
+            var inputSobory = ListingEditorFormComposer.createInputFormRowText(
+                'input-sobory', 'sobory.ru', 'идентификатор на sobory.ru'
+            );
+            var inputTemples = ListingEditorFormComposer.createInputFormRowText(
+                'input-temples', 'temples.ru', 'идентификатор на temples.ru'
+            );
             var inputProtection = ListingEditorFormComposer.createInputFormRowSelect(
                 'input-type', 'Категория охраны', monumentListingParameters.getParameter('protection').possibleValues
             );
 
             var tableObjectProperties = ListingEditorFormComposer.createTableTwoColumns();
 
+            var inputLat = $('<input id="input-lat" placeholder="11.11111" style="width: 80px;">');
+            var inputLong = $('<input id="input-long" placeholder="111.11111" style="width: 80px;">');
+            var inputPrecise = $('<input id="input-precise" type="checkbox">');
+            var coordinatesRow = $('<tr>').append(
+                $('<td style="text-align: center;">')
+                    .attr('colspan', '2')
+                    .append('Широта:&nbsp;')
+                    .append(inputLat)
+                    .append('&nbsp;Долгота:&nbsp;')
+                    .append(inputLong)
+                    .append('&nbsp;Точные?&nbsp;')
+                    .append(inputPrecise)
+            );
+
+
             tableObjectProperties.leftTableElement.append(inputType.rowElement);
             tableObjectProperties.leftTableElement.append(inputDestroyed.rowElement);
             tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
-            tableObjectProperties.leftTableElement.append(inputRegion.rowElement);
             tableObjectProperties.leftTableElement.append(inputDistrict.rowElement);
             tableObjectProperties.leftTableElement.append(inputMunicipality.rowElement);
-            tableObjectProperties.leftTableElement.append(inputBlock.rowElement);
             tableObjectProperties.leftTableElement.append(inputAddress.rowElement);
-            tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
-            tableObjectProperties.leftTableElement.append(inputLat.rowElement);
-            tableObjectProperties.leftTableElement.append(inputLong.rowElement);
-            tableObjectProperties.leftTableElement.append(inputPrecise.rowElement);
+            tableObjectProperties.leftTableElement.append(coordinatesRow);
             tableObjectProperties.leftTableElement.append(ListingEditorFormComposer.createRowDivider());
             tableObjectProperties.leftTableElement.append(inputYear.rowElement);
             tableObjectProperties.leftTableElement.append(inputAuthor.rowElement);
@@ -1267,22 +1276,57 @@ mw.loader.using(['mediawiki.api'], function() {
                 )
             });
 
-            tableObjectProperties.rightTableElement.append(inputKnid.rowElement);
-            tableObjectProperties.rightTableElement.append(inputComplex.rowElement);
-            tableObjectProperties.rightTableElement.append(inputKnidNew.rowElement);
-            tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
             tableObjectProperties.rightTableElement.append(inputImage.rowElement);
             tableObjectProperties.rightTableElement.append(selectImageLinkRow.rowElement);
             tableObjectProperties.rightTableElement.append(inputWiki.rowElement);
-            tableObjectProperties.rightTableElement.append(inputWdid.rowElement);
             tableObjectProperties.rightTableElement.append(inputCommonscat.rowElement);
-            tableObjectProperties.rightTableElement.append(inputMunid.rowElement);
-            tableObjectProperties.rightTableElement.append(inputDocument.rowElement);
             tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
             tableObjectProperties.rightTableElement.append(inputLink.rowElement);
             tableObjectProperties.rightTableElement.append(inputLinkExtra.rowElement);
+            tableObjectProperties.rightTableElement.append(inputSobory.rowElement);
+            tableObjectProperties.rightTableElement.append(inputTemples.rowElement);
             tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
             tableObjectProperties.rightTableElement.append(inputProtection.rowElement);
+
+            var showAdditionalParametersLink = $('<a>').text('Показать дополнительные параметры');
+            var hideAdditionalParametersLink = $('<a>').text('Скрыть дополнительные параметры').hide();
+            var additionParametersToggleRow = $('<tr>').append(
+                $('<td>')
+                    .attr('colspan', '2')
+                    .append(showAdditionalParametersLink)
+                    .append(hideAdditionalParametersLink)
+            );
+
+            tableObjectProperties.rightTableElement.append(ListingEditorFormComposer.createRowDivider());
+            tableObjectProperties.rightTableElement.append(additionParametersToggleRow);
+
+            // Additional parameters
+            var additionalRows = [
+                inputKnid.rowElement,
+                inputComplex.rowElement,
+                inputKnidNew.rowElement,
+                inputWdid.rowElement,
+                inputMunid.rowElement,
+                inputDocument.rowElement,
+                inputRegion.rowElement,
+                inputBlock.rowElement
+            ];
+
+            additionalRows.forEach(function(additionalRow) {
+                additionalRow.hide();
+                tableObjectProperties.rightTableElement.append(additionalRow);
+            });
+
+            function toggleAdditionalParams() {
+                additionalRows.forEach(function(additionalRow) {
+                    additionalRow.toggle();
+                });
+                showAdditionalParametersLink.toggle();
+                hideAdditionalParametersLink.toggle();
+            }
+
+            showAdditionalParametersLink.click(toggleAdditionalParams);
+            hideAdditionalParametersLink.click(toggleAdditionalParams);
 
             editorForm.formElement.append(tableObjectProperties.wrapperElement);
 
@@ -1310,8 +1354,8 @@ mw.loader.using(['mediawiki.api'], function() {
                 municipality: inputMunicipality.inputElement,
                 block: inputBlock.inputElement,
                 address: inputAddress.inputElement,
-                lat: inputLat.inputElement,
-                long: inputLong.inputElement,
+                lat: inputLat,
+                long: inputLong,
                 year: inputYear.inputElement,
                 author: inputAuthor.inputElement,
                 knid: inputKnid.inputElement,
@@ -1325,6 +1369,8 @@ mw.loader.using(['mediawiki.api'], function() {
                 document: inputDocument.inputElement,
                 link: inputLink.inputElement,
                 linkextra: inputLinkExtra.inputElement,
+                sobory: inputSobory.inputElement,
+                temples: inputTemples.inputElement,
                 description: objectDescriptionRow.inputDescription,
                 protection: inputProtection.inputElement,
             };
@@ -1342,7 +1388,7 @@ mw.loader.using(['mediawiki.api'], function() {
                         inputStyle.inputElement.val(listing['style'].toLowerCase());
                     }
                     inputDestroyed.inputElement.attr('checked', listing['status'] === 'destroyed');
-                    inputPrecise.inputElement.attr('checked', listing['precise'] === 'yes');
+                    inputPrecise.attr('checked', listing['precise'] === 'yes');
                 },
 
                 getValues: function() {
@@ -1355,7 +1401,7 @@ mw.loader.using(['mediawiki.api'], function() {
                     } else {
                         listingData['status'] = '';
                     }
-                    if (inputPrecise.inputElement.is(':checked')) {
+                    if (inputPrecise.is(':checked')) {
                         listingData['precise'] = 'yes';
                     } else {
                         listingData['precise'] = 'no';
