@@ -16,12 +16,18 @@ class NaturalMonumentType {
 
 let naturalMonumentTypes = [
     new NaturalMonumentType('', 'не задано'),
-    new NaturalMonumentType('sanctuary', 'заказник'),
     new NaturalMonumentType('reserve', 'заповедник'),
-    new NaturalMonumentType('park', 'природный/национальный парк'),
-    new NaturalMonumentType('arboretum', 'ботанический сад'),
+    new NaturalMonumentType('sanctuary', 'заказник'),
+    new NaturalMonumentType('resource reserve', 'ресурсный резерват'),
+    new NaturalMonumentType('arboretum', 'ботанический сад / дендрарий'),
+    new NaturalMonumentType('national park', 'национальный парк'),
+    new NaturalMonumentType('nature park', 'природный парк'),
+    new NaturalMonumentType('city park', 'городской парк'),
     new NaturalMonumentType('garden', 'памятник садово-паркового искусства'),
-    new NaturalMonumentType('nature', 'памятник природы')
+    new NaturalMonumentType('traditional', 'территории традиционного природопользования'),
+    new NaturalMonumentType('resort', 'рекреационная местность / курорт'),
+    new NaturalMonumentType('nature', 'памятник природы'),
+    new NaturalMonumentType('general', 'другое'),
 ];
 
 module.exports = naturalMonumentTypes;
